@@ -1,0 +1,9 @@
+still images ships
+positions lean r/l  1 and 2 + centered
+largura 90
+altura 106
+
+need jet sprites too
+
+
+na realidade 68x80, pós redminesindsaodas
