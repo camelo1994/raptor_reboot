@@ -5,7 +5,7 @@ from sound_engine import *
 from colorama import Fore
 
 
-#so´vai lindjoooo
+#so´vai lindjooooaaaaaaaaaaaaaaaaaaa
 data_db=None
 data_db_cursor=None
 items_db=None
