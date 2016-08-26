@@ -4,7 +4,6 @@ from render import *
 from sound_engine import *
 from colorama import Fore
 
-#kakakakakka
 data_db=None
 data_db_cursor=None
 items_db=None
