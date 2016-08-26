@@ -4,8 +4,7 @@ from render import *
 from sound_engine import *
 from colorama import Fore
 
-
-#so´vai lindjooooaaaaaaaaaaaaaaaaaaa
+#kakakakakka
 data_db=None
 data_db_cursor=None
 items_db=None
