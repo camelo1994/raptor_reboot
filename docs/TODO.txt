@@ -27,21 +27,31 @@ ch6-explosao media
 
 
 Nome: 	Rodrigo Scavuzzi de Abreu
-RA: 	13.03801-0
-Período: 	Diurno
-Aplicação: 	Jogo
-Área: 	Integração com banco de dados
-Integração com hardware externo
-Descritivo:
+sadsadsaasdfgasf
+A interação com hardware externo será feita pela opção de um controle externo (Joyistick), de forma que o jogador poder
+á escolher jogar através do teclado ou de um joyistick (caso ele tenha um).
 
-Meu projeto baseia-se em fazer um jogo de luta/aventura em 4 direções, no qual haverão vários personagens selecion
-áveis, todos referentes a grandes jogos/animes (Ex: Zelda, Goku, Charmander, etc) cada um com seus poderes e status de
-luta específicos que proporcionarão ao jogador uma jogabilidade diferente com cada um. Obs: Haverão personagens secretos
- no jogo também! Que poderão ser desbloqueados com código (cheat) ou com o zeramento do jogo em condições específicas (
- dificuldade do jogo, personagem escolhido para a campanha, etc.).
+Nome: 	Rodrigo Scavuzzi de Abreu
+sadsadsaasdfgasf
+A interação com hardware externo será feita pela opção de um controle externo (Joyistick), de forma que o jogador poder
+á escolher jogar através do teclado ou de um joyistick (caso ele tenha um).
 
-A integração com banco de dados ocorrerá devido a opção de salvar o jogo, de forma que, os personagens desbloqueados p
-elo jogador serão salvos para não força-lo a ter que desbloqueá-los de novo após reabrir o jogo.
+Nome: 	Rodrigo Scavuzzi de Abreu
+sadsadsaasdfgasf
+A interação com hardware externo será feita pela opção de um controle externo (Joyistick), de forma que o jogador poder
+á escolher jogar através do teclado ou de um joyistick (caso ele tenha um).
 
+Nome: 	Rodrigo Scavuzzi de Abreu
+sadsadsaasdfgasf
+A interação com hardware externo será feita pela opção de um controle externo (Joyistick), de forma que o jogador poder
+á escolher jogar através do teclado ou de um joyistick (caso ele tenha um).
+
+Nome: 	Rodrigo Scavuzzi de Abreu
+sadsadsaasdfgasf
+A interação com hardware externo será feita pela opção de um controle externo (Joyistick), de forma que o jogador poder
+á escolher jogar através do teclado ou de um joyistick (caso ele tenha um).
+
+Nome: 	Rodrigo Scavuzzi de Abreu
+sadsadsaasdfgasf
 A interação com hardware externo será feita pela opção de um controle externo (Joyistick), de forma que o jogador poder
 á escolher jogar através do teclado ou de um joyistick (caso ele tenha um).
