@@ -1,18 +1,18 @@
 import threading,time,pygame,colors,os,classes,colorama
 from colorama import Fore
 
-
-objects=[]
-texts=[]
-lines=[]
+#se tiver #$ na frente eh pq usa in-game
+objects=[]#$
+texts=[]#$
+lines=[]#$
 cursors=[]
 buttons=[]
-projectiles=[]
-sprays=[]
-sprites=[]
-shield_UI=[]
-hp_UI=[]
-enemy_ships=[]
+projectiles=[]#$
+sprays=[]#$
+sprites=[]#$
+shield_UI=[]#$-sao as barras laterais
+hp_UI=[]#$
+enemy_ships=[]#sao as naves inimgas e elas se blitam
 background=None
 player=None
 
@@ -122,13 +122,22 @@ class render_thread_class(threading.Thread):
 
                 #printa o fundo
                 if self.background:
-                    self.screen.blit(background.image,background.rect)
+                    background.blit(self.screen)
                 else:
                     self.screen.fill(colors.BLACK)
+
+                #prita objetos estaticos soltos
+                for i in objects:
+                    self.screen.blit(i.image,i.rect)
 
                 #printa os projeteis - tem seu proprio blit()
                 for i in projectiles:
                     i.blit(self.screen)
+
+                #printa naves inimigas - elas tem q ter seu proprio blit()
+                for i in enemy_ships:
+                    if i.alive:
+                        i.blit(self.screen)
 
                 #printa o player - tem seu proprio blit()
                 if self.show_player:
@@ -136,15 +145,6 @@ class render_thread_class(threading.Thread):
                     for i in sprays:
                         self.screen.blit(i.image,i.rect)
                     player.blit(self.screen)
-
-                #prita objetos estaticos soltos
-                for i in objects:
-                    self.screen.blit(i.image,i.rect)
-
-                #printa naves inimigas - elas tem q ter seu proprio blit()
-                for i in enemy_ships:
-                    if i.alive:
-                        i.blit(self.screen)
 
                 #printa sprites avulsos - possuem seu proprio blit -  classe Animation()
                 for i in sprites:

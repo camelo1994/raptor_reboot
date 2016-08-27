@@ -581,6 +581,32 @@ class MenuButton(Object):#(imagefileA,imagefileB,PosH,PosV,mode=None):
         else:
             self.image=self.imageB
 
+#BACKGROUND
+class Background:
+    def __init__(self,image,vy):
+        print('Loading Background')
+        self.objects=[]
+        for i in range(3):
+            self.objects.append(Object(image,0,0,0,0))
+        self.vy=vy
+
+        for i in self.objects:
+            i.rect.centerx=(sresH/2)
+
+        self.objects[0].rect.top=0
+        self.objects[1].rect.top=-sresV
+        self.objects[2].rect.top=-2*sresV
+
+    def update_rect(self):
+        for i in self.objects:
+            i.rect.centery+=self.vy
+            if i.rect.top>sresV:
+                i.rect.bottom=(-(sresV/2))
+
+    def blit(self,screen):
+        for i in self.objects:
+            screen.blit(i.image,i.rect)
+
 
 #SPRITEEEEEEESSSSSSSSSSSSS
 class anim_rect:
@@ -728,7 +754,7 @@ class Machine_gun(Weapon):
 
 
 #weapons dos inimigos
-class flak():
+class flak:
     def __init__(self,name):
         global items_db_cursor
         #read data
@@ -1020,7 +1046,7 @@ class Ship:
         self.update_bars()
 
     def update_bars(self):
-        self.print('Shield/HP Bar:'+str(self.energy_module.current_hp)+'% '+str(self.shield.current_hp)+'%')
+        #self.print('Shield/HP Bar:'+str(self.energy_module.current_hp)+'% '+str(self.shield.current_hp)+'%')
 
         for i in range(100):
             if i<self.energy_module.current_hp:
@@ -1040,14 +1066,14 @@ class Ship:
                 render.lines[i+102].start=(1300,800)
                 render.lines[i+102].end=(1300,800)
 
-    def take_damage(self,dmg):
+    def take_damage(self,dmg,projectile_x):
         if self.shield.current_hp>0:
             self.shield.take_damage(dmg)
             self.shield_sound.play()
             self.shield_anim.play()
         else:
             self.energy_module.take_damage(dmg)
-            spawn_sprite(self.rect.centerx,self.rect.centery,'small_explosion')
+            spawn_sprite(projectile_x,self.rect.centery-10,'small_explosion')
             play_sound('ship_hull')
         self.update_bars()
 
@@ -1070,10 +1096,17 @@ class Ship:
 
 
 def damage_taken_sprite_selector(origin):
-    if origin=='Machine GunL':
-        return 'blue_spark'
-    if origin=='Machine GunR':
-        return 'red_spark'
+    #machine gun
+    if origin=='Machine GunL' or origin=='Machine GunR':
+        a=random.randrange(2)
+        if a==0:
+            return 'blue_spark'
+        else:
+            return 'red_spark'
+
+
+
+    #aa_missle
     if origin=='Air/Air Missle':
         return 'small_explosion'
 
@@ -1156,9 +1189,10 @@ class enemy_ship_0():
             screen.blit(i.image,i.rect)
         screen.blit(self.image,self.rect)
 
-    def take_damage(self,dmg,origin):
-        self.hp-=dmg
-        spawn_sprite(self.rect.centerx,self.rect.centery,damage_taken_sprite_selector(origin))
+    def take_damage(self,proj):
+        self.hp-=proj.damage
+        spawn_sprite(proj.rect.centerx,self.rect.centery,damage_taken_sprite_selector(proj.origin))
+        #se morreu...
         if self.hp<=0:
             self.alive=False
             spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')#--tem q ser a medium

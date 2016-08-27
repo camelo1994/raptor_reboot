@@ -112,6 +112,7 @@ while 1:
             print('Leaving '+menu.last_status+' menu...')
             menu.cursor.diff_mode()
             renderer.show_cursor=True
+            renderer.show_player=False
             renderer.background=False
             if menu.next_status=='hangar':
                 sound_engine.mixer.channel[1].play(menu.bgm2,fade_ms=500)
@@ -321,7 +322,7 @@ while 1:
             file='images/background.png'#fundo
             #print('loading file: ' + file)
             aux=pygame.image.load(file).convert_alpha()
-            render.background=classes.Object(aux,0,0,0,0)
+            render.background=classes.Background(aux,2)
             renderer.background=True
 
             render.player=menu.player.ship
@@ -518,6 +519,7 @@ while 1:
                 render.update_list(render.projectiles)
                 render.update_list(render.sprites)
                 render.update_list(render.enemy_ships)
+                render.background.update_rect()
 
                 #verica colisoes com projeteis
                 for i in render.projectiles:
@@ -526,13 +528,13 @@ while 1:
                     #se o tiro nao for amigavel eu tomo dano
                         if not i.friendly:
                             if render.player.colliderect(i.rect):
-                                render.player.take_damage(i.damage)
+                                render.player.take_damage(i.damage,i.rect.centerx)
                                 i.valid=False
                         #se algum inimigo tomou dano:
                         else:
                             for a in render.enemy_ships:
                                 if a.rect.colliderect(i.rect):
-                                    a.take_damage(i.damage,i.origin)
+                                    a.take_damage(i)
                                     i.valid=False
 
 
@@ -560,7 +562,8 @@ while 1:
                                             +'  m1,m2,m3'+str(menu.cursor.buttons)\
                                             +'  desiredpos('+str(desired_pos)+')'\
                                             +'   nProj:'+str(len(render.projectiles))\
-                                            +'   nAnimPos:'+str(len(render.sprites_pos))\
+                                            +'   nObj:'+str(len(render.objects))\
+                                            +'   backgrounds:'+str(render.background.objects[0].rect.top)+','+str(render.background.objects[1].rect.top)+','+str(render.background.objects[2].rect.top)\
                                             +'   nAnim:'+str(len(render.sprites))\
                                             +'   nEnemy:'+str(len(render.enemy_ships))\
                                             +'   HP:'+str(menu.player.ship.energy_module.current_hp)\
