@@ -2,15 +2,12 @@
 
 Joguinho pampa do anderson
 
-Uso Academico
+_Uso Academico_
 
-**SE QUISER JOGARR**
 
-Tem que instalar
+Requerimentos:
 
-Python 3.5.1 - instalará o pip junto
-pelo pip instalar:
-
+**Python 3.5.1** 
 **Pygame 1.9.2b** - pip install pygame
 **PygAnim** - pip install pyganim
 
