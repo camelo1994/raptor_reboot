@@ -10,7 +10,6 @@ buttons=[]
 projectiles=[]
 sprays=[]
 sprites=[]
-sprites_pos=[]
 shield_UI=[]
 hp_UI=[]
 enemy_ships=[]
@@ -127,31 +126,35 @@ class render_thread_class(threading.Thread):
                 else:
                     self.screen.fill(colors.BLACK)
 
-                #printa os projeteis
+                #printa os projeteis - tem seu proprio blit()
                 for i in projectiles:
-                    self.screen.blit(i.image,i.rect)
+                    i.blit(self.screen)
 
-                #printa o player
+                #printa o player - tem seu proprio blit()
                 if self.show_player:
+                    #é o sproy da nave
+                    for i in sprays:
+                        self.screen.blit(i.image,i.rect)
                     player.blit(self.screen)
 
-                #bla bla bla
+                #prita objetos estaticos soltos
                 for i in objects:
                     self.screen.blit(i.image,i.rect)
+
+                #printa naves inimigas - elas tem q ter seu proprio blit()
                 for i in enemy_ships:
                     if i.alive:
-                        self.screen.blit(i.image,i.rect)
+                        i.blit(self.screen)
+
+                #printa sprites avulsos - possuem seu proprio blit -  classe Animation()
                 for i in sprites:
                     i.blit(self.screen)
-                for i in sprays:
-                    self.screen.blit(i.image,i.rect)
-
-
+                #printa linhas
                 for i in lines:
                     pygame.draw.line(self.screen,i.color,i.start,i.end,i.width)
                 for i in buttons:
                     self.screen.blit(i.image,i.rect)
-
+                #printa textos
                 for i in texts:
                     self.screen.blit(i.text,i.rect)
 

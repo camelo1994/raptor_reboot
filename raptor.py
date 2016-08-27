@@ -302,7 +302,6 @@ while 1:
             #esconde o cursor
             renderer.show_cursor=False
 
-
             #define canal 2 - bgm
             wave_bgm_file='bgm/raptor02.ogg'
             wave_sound=pygame.mixer.Sound(wave_bgm_file)
@@ -325,8 +324,6 @@ while 1:
             render.background=classes.Object(aux,0,0,0,0)
             renderer.background=True
 
-
-
             render.player=menu.player.ship
             renderer.show_player=True
 
@@ -335,8 +332,6 @@ while 1:
             #linhas
             render.lines.append(classes.line((1250,0),(1250,800),colors.WHITE,1))
             render.lines.append(classes.line((30,0),(30,800),colors.WHITE,1))
-
-
 
              #avisa pra nave q vai entrar em batalha
             menu.player.ship.enter_battle()
@@ -487,15 +482,22 @@ while 1:
                         menu.cursor.diff_mode()
                     if event.key==K_F1:
                         menu.swap('hangar')
-                    if event.key==K_F2:
-                        render.objects[0].take_damage(10)
                     if event.key==K_F3:
                         classes.spawn_sprite(100,100,'small_explosion')
                     if event.key==K_F4:
                         classes.spawn_sprite(100,100,'small_explosion',5,5)
+                    if event.key==K_F2:
+                        render.player.take_damage(1)
                     if event.key==K_F5:
                         classes.spawn(0,random.randrange(200,1000))
-
+                    if event.key==K_F12:
+                        render.player.shield.current_hp+=10
+                    if event.key==K_F11:
+                        render.player.energy_module.current_hp+=10
+                    if event.key==K_F8:
+                        render.enemy_ships[1].fire()
+                    if event.key==K_F9:
+                        render.enemy_ships[2].fire()
             #atualiza o menu
             menu.update(renderer)
 
@@ -519,18 +521,19 @@ while 1:
 
                 #verica colisoes com projeteis
                 for i in render.projectiles:
-
-                    #se a nave tomou dano:
-                    if menu.player.ship.rect.colliderect(i.rect):
-                        if not i.friendly:#se o tiro nao for amigavel eu tomo dano
-                            menu.player.ship.take_damage(i.damage)
-                            i.valid=False
-                    #se algum inimigo tomou dano:
-                    for a in render.enemy_ships:
-                        if a.rect.colliderect(i.rect):
-                            if i.friendly:#se o tiro for amigavel  a nave toma dano
-                                a.take_damage(i.damage)
+                    #se o projetil ainda for valido
+                    if i.valid:
+                    #se o tiro nao for amigavel eu tomo dano
+                        if not i.friendly:
+                            if render.player.colliderect(i.rect):
+                                render.player.take_damage(i.damage)
                                 i.valid=False
+                        #se algum inimigo tomou dano:
+                        else:
+                            for a in render.enemy_ships:
+                                if a.rect.colliderect(i.rect):
+                                    a.take_damage(i.damage)
+                                    i.valid=False
 
 
             #atira se tiver com wm1 apertado
