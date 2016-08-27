@@ -32,17 +32,27 @@ def init(a,b):
     start_enemy_dict()
 
 
-
 class sprite_data:
     def __init__(self,anim,w,h):
         self.Animation=anim
         self.h=h
         self.w=w
 
+
 def start_sprite_dict():
     global sprites_dict
     #inicia um dicionario global de sprites
     print('Initializing sprites dictionary')
+
+    ''' ---TEMPLATE---
+    spritelist=[]
+    for i in range(14) <------n de imagens +1
+        aux='sprites/small_explosion/'+str(i)+'.png'
+        spritelist.append((aux,100))<-------- tempo quie cada um vai ficar na tela
+        aux=pyganim.PygAnimation(spritelist)
+        sprites_dict['small_explosion']=sprite_data(aux,64,64)<-----altura e largura
+    '''
+
 
     #'small_explosion'
     spritelist=[]
@@ -50,9 +60,19 @@ def start_sprite_dict():
         aux='sprites/small_explosion/'+str(i)+'.png'
         spritelist.append((aux,100))
         aux=pyganim.PygAnimation(spritelist)
-        sprites_dict['small_explosion']=sprite_data(aux,100,100)
-    #shield da nave
+        sprites_dict['small_explosion']=sprite_data(aux,64,64)
 
+
+    #'medium_explosion'
+    spritelist=[]
+    for i in range(14):
+        aux='sprites/medium_explosion/'+str(i)+'.png'
+        spritelist.append((aux,50))
+        aux=pyganim.PygAnimation(spritelist)
+        sprites_dict['medium_explosion']=sprite_data(aux,160,160)
+
+
+    #shield da nave
     spritelist=[]
     for i in range(7):
         aux='images/ship/shield/'+str(i)+'.png'
@@ -103,20 +123,20 @@ def play_sound(key):
     global audio_dict
     if key in audio_dict:
         n=sound_engine.mixer.find_channel()
-        if n != None:
+        if n!=None:
             sound_engine.mixer.channel[n].play(audio_dict.get(key))
     else:
         print('There is no audio: '+key)
 
 
 def spawn(ID,posx):
-        n=len(render.enemy_ships)
+    n=len(render.enemy_ships)
 
-        if ID==0:
-            render.enemy_ships.append(enemy_ship_0())
+    if ID==0:
+        render.enemy_ships.append(enemy_ship_0())
 
+    render.enemy_ships[n].start(posx)
 
-        render.enemy_ships[n].start(posx)
 
 class text:#(str,ttf_file,size,color,cx,cy,abs?) none=center / 1=topleft / 2=topright
     def __init__(self,str,ttf_file,size,color,cx,cy,abs=None):
@@ -150,9 +170,11 @@ class text:#(str,ttf_file,size,color,cx,cy,abs?) none=center / 1=topleft / 2=top
             self.rect=self.text.get_rect(right=self.cx,top=self.cy)
         else:
             self.rect=self.text.get_rect(centerx=self.cx,centery=self.cy)
+
     def add_text(self,str):
         self.str+=str
         self.text=self.font.render(self.str,1,self.color)
+
 
 class line:#(start,end,color,width)
     def __init__(self,start,end,color,width):
@@ -477,7 +499,6 @@ class Projectile(Object):
             self.Animation=kwargs.get('anim')
             self.has_anim=True
 
-
     def check_out(self):
         if self.rect.bottom<=-100 or self.rect.top>=900 or self.valid==False:
             return True
@@ -609,12 +630,14 @@ class AA_missle(Weapon):
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
             #poe os 2 projeteis
-            render.projectiles.append(
-                Projectile(self.projectile_image,pos[0]+20,pos[1],0,self.projectile_speedV,anim=Animation(self.anim,anim_rect(pos[0]+20+5,pos[1]+20,0,self.projectile_speedV,8,20),True),friendly=True,
-                           damage=self.damage))
-            render.projectiles.append(
-                Projectile(self.projectile_image,pos[0]-27,pos[1],0,self.projectile_speedV,anim=Animation(self.anim,anim_rect(pos[0]-22,pos[1]+20,0,self.projectile_speedV,8,20),True),friendly=True,
-                           damage=self.damage))
+            render.projectiles.append(Projectile(self.projectile_image,pos[0]+20,pos[1],0,self.projectile_speedV,
+                                                 anim=Animation(self.anim,anim_rect(pos[0]+20+5,pos[1]+20,0,
+                                                                                    self.projectile_speedV,8,20),True),
+                                                 friendly=True,damage=self.damage))
+            render.projectiles.append(Projectile(self.projectile_image,pos[0]-27,pos[1],0,self.projectile_speedV,
+                                                 anim=Animation(self.anim,
+                                                                anim_rect(pos[0]-22,pos[1]+20,0,self.projectile_speedV,
+                                                                          8,20),True),friendly=True,damage=self.damage))
             n=len(render.sprites)
 
             #poe os dois sprites de foguinho
@@ -784,7 +807,6 @@ class Ship:
         self.last_jet=0
         self.jet_status=False
 
-
         #lista com 5 images de inclina??o 0->4
         print('\t loading ship images...')
         imagespath='images/ship/'+str(self.skin)+'/ship_'
@@ -822,8 +844,6 @@ class Ship:
             aux=imagespath+'spray'+str(20+(i*2))+'.png'
             self.images_spray.append(pygame.image.load(aux).convert_alpha())
 
-
-
         #sprite do shield tomando dano
         self.shield_anim=sprites_dict.get('ship_shield')
         self.shield_anim._loop=False
@@ -833,7 +853,6 @@ class Ship:
         self.shield_rect=self.shield_image.get_rect()
         self.shield_rect.centerx=self.rect.centerx
         self.shield_rect.centery=self.rect.centery
-
 
         #audio para tomar dano
 
@@ -856,7 +875,7 @@ class Ship:
 
             #acerta graficos da nave   
             if self.direction==None or (self.direction==True and x<0) or (
-                    self.direction==False and x>0) or pygame.time.get_ticks()-self.keep_pos>=500:
+                            self.direction==False and x>0) or pygame.time.get_ticks()-self.keep_pos>=500:
                 self.keep_pos=pygame.time.get_ticks()
 
                 #inclina??o
@@ -1057,12 +1076,10 @@ class enemy_ship_0():
         self.jet_time=pygame.time.get_ticks()
         self.jet_style=True
 
-
     def start(self,posx):
         self.rect.centerx=posx
         self.jets[0].rect.left=self.rect.centerx+22
         self.jets[1].rect.right=self.rect.centerx-22
-
 
     def fire(self):
         if pygame.time.get_ticks()-self.weapon.clock>=self.cooldown:
@@ -1074,7 +1091,6 @@ class enemy_ship_0():
                 Projectile(self.weapon.projectile_image,self.rect.centerx+self.offsetR,self.rect.centery,0,
                            self.weapon.projectile_speedV,'centered',damage=self.weapon.damage,friendly=False))
             play_sound('flak')
-
 
     def update_rect(self):
         self.rect=self.rect.move(0,self.speed)
@@ -1094,17 +1110,15 @@ class enemy_ship_0():
         if self.rect.top>=sresV or self.alive==False:
             return True
 
-
     def blit(self,screen):
         for i in self.jets:
             screen.blit(i.image,i.rect)
         screen.blit(self.image,self.rect)
 
-
     def take_damage(self,dmg):
         self.hp-=dmg
         if self.hp<=0:
             self.alive=False
-            spawn_sprite(self.rect.centerx,self.rect.centery,'small_explosion')#--tem q ser a medium
+            spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')#--tem q ser a medium
             play_sound('medium_explosion')
             return True

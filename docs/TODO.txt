@@ -5,7 +5,7 @@ extrair sprite das fasicas -  qnd metralhadora acerta /aa_missle, tem q tocar es
 
 implementar a animação de pequena explosao,(talvez fazer uma extra small) para qnd um flak acertar a nave direto
 
-acertar images da explosao pequena e deixar todas com o mesmo tamanho
+
 entao acertar altura pro spawner de sprites
 
 
@@ -22,3 +22,6 @@ ch5-mg(arma 2)
 ch6-explosao media
 
 
+para remover iccp
+
+pngcrush_1_8.5_w64.exe -ow -rem iCCP -sRGB "F:\raptor_reboot\sprites\small_explosion\13.png"
