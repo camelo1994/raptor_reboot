@@ -532,7 +532,7 @@ while 1:
                         else:
                             for a in render.enemy_ships:
                                 if a.rect.colliderect(i.rect):
-                                    a.take_damage(i.damage)
+                                    a.take_damage(i.damage,i.origin)
                                     i.valid=False
 
 

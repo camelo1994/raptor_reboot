@@ -1,14 +1,16 @@
 
 TO DO LIST:
-extrair sprite explosao media
-extrair sprite das fasicas -  qnd metralhadora acerta /aa_missle, tem q tocar esse sprite no lugar onde hitou
-
-implementar a animação de pequena explosao,(talvez fazer uma extra small) para qnd um flak acertar a nave direto
+reduzir tamanho das sparks?:???????
 
 
-entao acertar altura pro spawner de sprites
+DAR UM JEITO DE SPAWNAR SPRITE NO LUGAR ONDE COLIDIU E NAO NO CENTRO KAPPA
 
 
+
+
+FUNDO ROLANDO PRA TRAS!!!!
+
+SOM DE PEGAR DIRETO NO HULL
 
 
 

@@ -41,8 +41,8 @@ class sprite_data:
 
 def start_sprite_dict():
     global sprites_dict
-    #inicia um dicionario global de sprites
-    print('Initializing sprites dictionary')
+    #inicia um dicionario global de sprites - leva um tempora carregar
+    print('Initializing sprites dictionary -  may take some time!')
 
     ''' ---TEMPLATE---
     spritelist=[]
@@ -72,6 +72,26 @@ def start_sprite_dict():
         sprites_dict['medium_explosion']=sprite_data(aux,160,160)
 
 
+    #'blue spark'
+    name='blue_spark'
+    spritelist=[]
+    for i in range(6):
+        aux='sprites/'+name+'/'+str(i)+'.png'
+        spritelist.append((aux,20))
+        aux=pyganim.PygAnimation(spritelist)
+        sprites_dict[name]=sprite_data(aux,60,60)
+
+
+    #'red_spark'
+    name='red_spark'
+    spritelist=[]
+    for i in range(6):
+        aux='sprites/'+name+'/'+str(i)+'.png'
+        spritelist.append((aux,20))
+        aux=pyganim.PygAnimation(spritelist)
+        sprites_dict[name]=sprite_data(aux,60,60)
+
+
     #shield da nave
     spritelist=[]
     for i in range(7):
@@ -87,16 +107,25 @@ def start_audio_dict():
     print('Initializing audio dictionary')
 
     #barulho da arma flak - 'flak'
+    name='flak'
     aux='sounds/weapons/flak.ogg'
     aux=pygame.mixer.Sound(aux)
     aux.set_volume(0.3)
-    audio_dict['flak']=aux
+    audio_dict[name]=aux
 
     #barulho da explosao media - 'medium_explosion'
+    name='medium_explosion'
     aux='sounds/medium_explosion.ogg'
     aux=pygame.mixer.Sound(aux)
     aux.set_volume(1)
-    audio_dict['medium_explosion']=aux
+    audio_dict[name]=aux
+
+    #barulho do casco da nave
+    name='ship_hull'
+    aux='sounds/ship/hull.ogg'
+    aux=pygame.mixer.Sound(aux)
+    aux.set_volume(1)
+    audio_dict[name]=aux
 
 
 def start_enemy_dict():
@@ -107,7 +136,7 @@ def start_enemy_dict():
     enemy_dict['0']=enemy_ship_0()
 
 
-#chamadas
+#chamadas DE SPAWN
 def spawn_sprite(x,y,key,dx=0,dy=0):
     global sprites_dict
     if key in sprites_dict:
@@ -116,7 +145,10 @@ def spawn_sprite(x,y,key,dx=0,dy=0):
         render.sprites.append(Animation(aux.Animation,anim_rect(x,y,dx,dy,aux.w,aux.h)))
         render.sprites[n].animation.play()
     else:
-        print('There is no sprite: '+key)
+        if key==None:
+            print('No key was provided')
+        else:
+            print(key+' was not found on the sprites dictionary!')
 
 
 def play_sound(key):
@@ -137,7 +169,7 @@ def spawn(ID,posx):
 
     render.enemy_ships[n].start(posx)
 
-
+#CLASSES GERAIS
 class text:#(str,ttf_file,size,color,cx,cy,abs?) none=center / 1=topleft / 2=topright
     def __init__(self,str,ttf_file,size,color,cx,cy,abs=None):
         #local defs
@@ -488,10 +520,17 @@ class Projectile(Object):
 
         if 'damage' in kwargs:
             self.damage=kwargs.get('damage')
+
+        if 'origin' in kwargs:
+            self.origin=kwargs.get('origin')
+        else:
+            self.origin=None
+
         if 'friendly' in kwargs:
             self.friendly=kwargs.get('friendly')
         else:
             self.friendly=False
+
         self.valid=True
 
         self.has_anim=False
@@ -631,22 +670,15 @@ class AA_missle(Weapon):
             self.clock=pygame.time.get_ticks()
             #poe os 2 projeteis
             render.projectiles.append(Projectile(self.projectile_image,pos[0]+20,pos[1],0,self.projectile_speedV,
-                                                 anim=Animation(self.anim,anim_rect(pos[0]+20+5,pos[1]+20,0,
+                                                 anim=Animation(self.anim,
+                                                                anim_rect(pos[0]+20+5,pos[1]+20,0,
                                                                                     self.projectile_speedV,8,20),True),
-                                                 friendly=True,damage=self.damage))
+                                                 friendly=True,damage=self.damage,origin=self.name))
             render.projectiles.append(Projectile(self.projectile_image,pos[0]-27,pos[1],0,self.projectile_speedV,
                                                  anim=Animation(self.anim,
                                                                 anim_rect(pos[0]-22,pos[1]+20,0,self.projectile_speedV,
-                                                                          8,20),True),friendly=True,damage=self.damage))
+                                                                          8,20),True),friendly=True,damage=self.damage,origin=self.name))
             n=len(render.sprites)
-
-            #poe os dois sprites de foguinho
-            #render.sprites.append(
-            #    Animation(self.anim,anim_rect(pos[0]+20+5,pos[1]+20,0,self.projectile_speedV,8,20),True))
-            #render.sprites[n].animation.play()
-            #render.sprites.append(
-            #    Animation(self.anim,anim_rect(pos[0]-22,pos[1]+20,0,self.projectile_speedV,8,20),True))
-            #render.sprites[n+1].animation.play()
 
             #toca barulinho
             sound_engine.mixer.channel[4].play(self.fire_sound)
@@ -677,19 +709,19 @@ class Machine_gun(Weapon):
             if a>5:
                 render.projectiles.append(
                     Projectile(self.projectile_image_inv,pos[0]+15,pos[1],0,self.projectile_speedV,damage=self.damage,
-                               friendly=True))
+                               friendly=True,origin=self.name+'R'))
             else:
                 render.projectiles.append(
                     Projectile(self.projectile_image,pos[0]+15,pos[1],0,self.projectile_speedV,damage=self.damage,
-                               friendly=True))
+                               friendly=True,origin=self.name+'R'))
             if b>5:
                 render.projectiles.append(
                     Projectile(self.projectile_image_inv,pos[0]-20,pos[1],0,self.projectile_speedV,damage=self.damage,
-                               friendly=True))
+                               friendly=True,origin=self.name+'L'))
             else:
                 render.projectiles.append(
                     Projectile(self.projectile_image,pos[0]-20,pos[1],0,self.projectile_speedV,damage=self.damage,
-                               friendly=True))
+                               friendly=True,origin=self.name+'L'))
 
             # toca barulinho
             sound_engine.mixer.channel[5].play(self.fire_sound)
@@ -1015,6 +1047,8 @@ class Ship:
             self.shield_anim.play()
         else:
             self.energy_module.take_damage(dmg)
+            spawn_sprite(self.rect.centerx,self.rect.centery,'small_explosion')
+            play_sound('ship_hull')
         self.update_bars()
 
     def print(self,str):
@@ -1035,6 +1069,13 @@ class Ship:
 #ships inimigas
 
 
+def damage_taken_sprite_selector(origin):
+    if origin=='Machine GunL':
+        return 'blue_spark'
+    if origin=='Machine GunR':
+        return 'red_spark'
+    if origin=='Air/Air Missle':
+        return 'small_explosion'
 
 class enemy_ship_0():
     def __init__(self):
@@ -1115,8 +1156,9 @@ class enemy_ship_0():
             screen.blit(i.image,i.rect)
         screen.blit(self.image,self.rect)
 
-    def take_damage(self,dmg):
+    def take_damage(self,dmg,origin):
         self.hp-=dmg
+        spawn_sprite(self.rect.centerx,self.rect.centery,damage_taken_sprite_selector(origin))
         if self.hp<=0:
             self.alive=False
             spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')#--tem q ser a medium
