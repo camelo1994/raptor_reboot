@@ -740,6 +740,7 @@ class Ship:
         self.last_jet=0
         self.jet_status=False
 
+
         #lista com 5 images de inclina??o 0->4
         print('\t loading ship images...')
         imagespath='images/ship/'+str(self.skin)+'/ship_'
@@ -762,12 +763,12 @@ class Ship:
         self.image=self.images[2]
         self.rect=self.image.get_rect()
         self.rect.center=(640,750)
-        print('\timages-OK')
+        self.print('\timages-OK')
 
         #carrega os sprites
         #todos tem 8px de largura
         #só serao colocados no render qnd entrar em batalha
-        print('\t loading jet sprays...')
+        self.print('\t loading jet sprays...')
         imagespath='images/ship/'+str(self.skin)+'/jet_spray/'
         self.images_spray=[]
         aux=imagespath+'spray10.png'
@@ -776,6 +777,14 @@ class Ship:
         for i in range(11):
             aux=imagespath+'spray'+str(20+(i*2))+'.png'
             self.images_spray.append(pygame.image.load(aux).convert_alpha())
+
+
+        for i in range(6)?
+
+
+        #sprite do shield tomando dano
+
+
 
         #audio para tomar dano
 
@@ -941,6 +950,9 @@ class Ship:
 
     def print(self,str):
         print(Fore.LIGHTRED_EX+'[SHIP] '+Fore.RESET+str)
+
+    def blit(self,screen):
+        screen.blit(self.image,self.rect)
 
 
 #ships inimigas

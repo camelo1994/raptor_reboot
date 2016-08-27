@@ -1,6 +1,7 @@
 import threading,time,pygame,colors,os,classes,colorama
 from colorama import Fore
 
+
 objects=[]
 texts=[]
 lines=[]
@@ -14,6 +15,7 @@ shield_UI=[]
 hp_UI=[]
 enemy_ships=[]
 background=None
+player=None
 
 
 def update_list(list,spritelist=False,flaga=None,flagb=None):
@@ -82,6 +84,7 @@ class render_thread_class(threading.Thread):
         #flags
         self.run_flag=True
         self.show_cursor=True
+        self.show_player=False
         self.blit_flags=Blit()
         self.background=False
 
@@ -118,13 +121,21 @@ class render_thread_class(threading.Thread):
             if pygame.time.get_ticks()-self.Clocktime>=self.timeinterval:
                 self.Clocktime=pygame.time.get_ticks()
 
+                #printa o fundo
                 if self.background:
                     self.screen.blit(background.image,background.rect)
                 else:
                     self.screen.fill(colors.BLACK)
 
+                #printa os projeteis
                 for i in projectiles:
                     self.screen.blit(i.image,i.rect)
+
+                #printa o player
+                if self.show_player:
+                    player.blit(self.screen)
+
+                #bla bla bla
                 for i in objects:
                     self.screen.blit(i.image,i.rect)
                 for i in enemy_ships:

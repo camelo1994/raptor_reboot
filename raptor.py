@@ -302,6 +302,7 @@ while 1:
             #esconde o cursor
             renderer.show_cursor=False
 
+
             #define canal 2 - bgm
             wave_bgm_file='bgm/raptor02.ogg'
             wave_sound=pygame.mixer.Sound(wave_bgm_file)
@@ -324,10 +325,11 @@ while 1:
             render.background=classes.Object(aux,0,0,0,0)
             renderer.background=True
 
-            ship_list_number=len(render.objects)
-            #esta hardcoded, a nave tem q ser o objeto#0
-            render.objects.append(menu.player.ship)
-            #a foto da arma equipada eh o bjeto 1
+
+
+            render.player=menu.player.ship
+            renderer.show_player=True
+
             render.objects.append(menu.player.ship.weapon[0])
 
             #linhas
@@ -504,7 +506,7 @@ while 1:
             if desired_pos[1]+menu.cursor.posdY>40 and desired_pos[1]+menu.cursor.posdY<sresV-40:
                 desired_pos[1]+=menu.cursor.posdY
             #move a nave    
-            render.objects[ship_list_number].move(desired_pos)
+            render.player.move(desired_pos)
 
             #atualiza tudo
             if pygame.time.get_ticks()-clock>=16:
@@ -533,7 +535,7 @@ while 1:
 
             #atira se tiver com wm1 apertado
             if menu.cursor.buttons[0]:
-                render.objects[ship_list_number].fire()
+                render.player.fire()
 
 
             for i in render.enemy_ships:
