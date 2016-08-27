@@ -1,21 +1,18 @@
-acertar erro do threading do render
 
-ENGINEERING
-animção da nave tomando dano
-
-DESIGN
-animaão nave tomando dano
-
+TO DO LIST:
 extrair sprite explosao media
-extrair sprite do tirinho de metralhadora
-"           " do aa_missle acertando alvo
+extrair sprite das fasicas -  qnd metralhadora acerta /aa_missle, tem q tocar esse sprite no lugar onde hitou
+
+implementar a animação de pequena explosao,(talvez fazer uma extra small) para qnd um flak acertar a nave direto
+
+acertar images da explosao pequena e deixar todas com o mesmo tamanho
+entao acertar altura pro spawner de sprites
 
 
 
 
 
 mixxer durante missao
-
 ch0-bgm menu
 ch1-bgm hangar
 ch2-bgm missao
