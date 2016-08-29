@@ -1,3 +1,13 @@
+'''
+Raptor - Call of the Shadows reboot
+Created on 25/06/2016
+
+
+
+ Notes:
+     Many times you will encounter if 1: statements these were used to fold the test
+
+'''
 import os,sys,random,time,threading,sqlite3,colorama
 import sound_engine,classes
 
@@ -25,31 +35,41 @@ pygame.display.init()
 pygame.mixer.init()
 sound_engine.mixer=sound_engine.Mixer(22050,8,32)
 
-
-#CONSTANTS
+#CONFIGURAÇOES
 sresH=1280
 sresV=800
-fps=100
+fps=75
+enable_shadows=True
+
+
+#CONSTANTS
+
 #CONTROL
 debug=True
 op=0
 kappa=0
 a=0
+distance=0
 main_engine_fps=0
 main_engine_fps_show=0
 main_engine_fps_clock=pygame.time.get_ticks()
 clock=pygame.time.get_ticks()
+enemy_ships=[]
+
+
+
+
+#inicializaões + tela de loading
 if 1:
     #loading crosshair file, and starting the renderer thread
     crosshair_file='images/cursor/crosshair.png'
     pygame.mouse.set_visible(False)
-    print('loading file: '+crosshair_file)
-    if fps!=0:
-        fps=int((1/fps)*1000)
+
     #initializes renderer
-    renderer=render.render_thread_class(sresH,sresV,'Raptor',crosshair_file,fps)
+    renderer=render.render_thread_class(sresH,sresV,'Raptor',crosshair_file,fps,enable_shadows)
     renderer.start()
 
+if 1:
     #printing loading screen
     file='images/menu/falido e falencia.png'
     aux=pygame.image.load(file).convert_alpha()
@@ -58,7 +78,7 @@ if 1:
     #loading everything from the user and starting the menu
     data_db_file='sql/data.db'
     items_db_file='sql/items.db'
-    classes.init(data_db_file,items_db_file)
+    classes.init(data_db_file,items_db_file,enable_shadows)
 
     bgm_file='bgm/raptor11.ogg'
     bgm_file2='bgm/raptor09.ogg'
@@ -76,8 +96,7 @@ if 1:
     #else:
     #   print('lindao!!!!!!')
 
-
-
+#loop principal
 print('\n\nStarting main loop:')
 menu.swap('main')
 while 1:
@@ -114,6 +133,8 @@ while 1:
             renderer.show_cursor=True
             renderer.show_player=False
             renderer.background=False
+            enemy_ships=[]
+            distance=0
             if menu.next_status=='hangar':
                 sound_engine.mixer.channel[1].play(menu.bgm2,fade_ms=500)
                 sound_engine.mixer.channel[2].fadeout(500)
@@ -190,8 +211,6 @@ while 1:
             print('Generating profiles menu...')
             renderer.clear_control()
             #controle pra nao dar merda
-            menu.lastprofile=menu.profileindex
-            menu.lastplayer=menu.player
 
             #objetos
             file='images/menu/menu.png'#fundo
@@ -250,7 +269,7 @@ while 1:
 
             #linhas
             render.lines.append(classes.line((600,450),(600,700),colors.RED,3))
-
+            menu.update_menu_profile_data()
             menu.update(renderer)
         if menu.next_status=='hangar':
             print('Generating hangar menu...')
@@ -302,43 +321,57 @@ while 1:
             menu.cursor.diff_mode()
             #esconde o cursor
             renderer.show_cursor=False
+            if 1:
+                #define canal 2 - bgm
+                wave_bgm_file='bgm/raptor02.ogg'
+                wave_sound=pygame.mixer.Sound(wave_bgm_file)
+                wave_sound.set_volume(0.3)
+                sound_engine.mixer.channel[2].play(wave_sound,loops=-1)
+                #define canal 3 - barulho do vento
+                jet_sound_file='sounds/jet_interior.ogg'
+                jet_sound=pygame.mixer.Sound(jet_sound_file)
+                jet_sound.set_volume(0.5)
+                sound_engine.mixer.channel[3].play(jet_sound,loops=-1)
 
-            #define canal 2 - bgm
-            wave_bgm_file='bgm/raptor02.ogg'
-            wave_sound=pygame.mixer.Sound(wave_bgm_file)
-            wave_sound.set_volume(0.3)
-            sound_engine.mixer.channel[2].play(wave_sound,loops=-1)
-            #define canal 3 - barulho do vento
-            jet_sound_file='sounds/jet_interior.ogg'
-            jet_sound=pygame.mixer.Sound(jet_sound_file)
-            jet_sound.set_volume(0.5)
-            sound_engine.mixer.channel[3].play(jet_sound,loops=-1)
+                desired_pos=[]
+                desired_pos.append(sresH/2)
+                desired_pos.append(100)
 
-            desired_pos=[]
-            desired_pos.append(sresH/2)
-            desired_pos.append(100)
+                #fundo
+                file='images/background.png'#fundo
+                #print('loading file: ' + file)
+                aux=pygame.image.load(file).convert_alpha()
+                render.background=classes.Background(aux,2)
+                renderer.background=True
 
-            #fundo
-            file='images/background.png'#fundo
-            #print('loading file: ' + file)
-            aux=pygame.image.load(file).convert_alpha()
-            render.background=classes.Background(aux,2)
-            renderer.background=True
+                render.player=menu.player.ship
+                renderer.show_player=True
 
-            render.player=menu.player.ship
-            renderer.show_player=True
+                render.objects.append(menu.player.ship.weapon[0])
 
-            render.objects.append(menu.player.ship.weapon[0])
+                #linhas
+                render.lines.append(classes.line((1250,0),(1250,800),colors.WHITE,1))
+                render.lines.append(classes.line((30,0),(30,800),colors.WHITE,1))
 
-            #linhas
-            render.lines.append(classes.line((1250,0),(1250,800),colors.WHITE,1))
-            render.lines.append(classes.line((30,0),(30,800),colors.WHITE,1))
+                 #avisa pra nave q vai entrar em batalha
+                menu.player.ship.enter_battle()
 
-             #avisa pra nave q vai entrar em batalha
-            menu.player.ship.enter_battle()
+                kappa=pygame.time.get_ticks()
 
-            kappa=pygame.time.get_ticks()
 
+            print('Loading enemy ships list - may take some time')
+            for i in range(40):
+                a=i*100
+                enemy_ships.append((a,classes.spawn(0),random.randrange(750)))
+                enemy_ships.append((a+150,classes.spawn(0),random.randrange(750)))
+
+
+
+            next_ship_spawn=enemy_ships[0][0]
+            next_ship_pos=enemy_ships[0][2]
+            current_ship=0
+            total_ships=40
+            wave_over=False
 
         menu.done_loading()#informa ao menu,que Load/Unloads foram realizados
 
@@ -397,8 +430,10 @@ while 1:
 
             #debugs
             renderer.debug_text.update_text('Mouse: X,Y('+str(menu.cursor.posX)+','+str(menu.cursor.posY)+')'\
-                                            +' dX,dY('+str(menu.cursor.posdX)+','+str(menu.cursor.posdY)+')'\
-                                            +'m1,m2,m3'+str(menu.cursor.buttons),colors.BLUE1)
+                                            +'  dX,dY('+str(menu.cursor.posdX)+','+str(menu.cursor.posdY)+')'\
+                                            +'  m1,m2,m3'+str(menu.cursor.buttons)\
+                                            +'  selected player:'+str(menu.selected_player)\
+                                            +'  active player:'+str(menu.active_player),colors.BLUE1)
 
         while menu.status=='hangar':
             for event in pygame.event.get():
@@ -489,8 +524,6 @@ while 1:
                         classes.spawn_sprite(100,100,'small_explosion',5,5)
                     if event.key==K_F2:
                         render.player.take_damage(1)
-                    if event.key==K_F5:
-                        classes.spawn(0,random.randrange(200,1000))
                     if event.key==K_F12:
                         render.player.shield.current_hp+=10
                     if event.key==K_F11:
@@ -502,8 +535,7 @@ while 1:
             #atualiza o menu
             menu.update(renderer)
 
-            #move a nave
-            #verifica posição desejada para ver se cabe na tela
+            #move a nave &verifica posição desejada para ver se cabe na tela
             if desired_pos[0]+menu.cursor.posdX<sresH-34 and desired_pos[0]+menu.cursor.posdX>34:
                 desired_pos[0]+=menu.cursor.posdX
             if desired_pos[1]+menu.cursor.posdY>40 and desired_pos[1]+menu.cursor.posdY<sresV-40:
@@ -515,10 +547,24 @@ while 1:
             if pygame.time.get_ticks()-clock>=16:
                 clock=pygame.time.get_ticks()
 
+                #verifica naves novas na lista
+                distance+=1
+                if distance>=next_ship_spawn and not wave_over:
+                    n=len(render.enemy_ships)
+                    render.enemy_ships.append(enemy_ships[current_ship][1])
+                    render.enemy_ships[n].start(next_ship_pos)
+                    if current_ship<total_ships:
+                        current_ship+=1
+                        next_ship_spawn=enemy_ships[current_ship][0]
+                        next_ship_pos=enemy_ships[current_ship][2]
+                    else:
+                        wave_over=True
+
                 #posicoes
                 render.update_list(render.projectiles)
                 render.update_list(render.sprites)
                 render.update_list(render.enemy_ships)
+
                 render.background.update_rect()
 
                 #verica colisoes com projeteis
@@ -527,14 +573,25 @@ while 1:
                     if i.valid:
                     #se o tiro nao for amigavel eu tomo dano
                         if not i.friendly:
+                            #verifica se eu tomei dano, retorna true se sim
                             if render.player.colliderect(i.rect):
+                                #entao me desconta a vida
                                 render.player.take_damage(i.damage,i.rect.centerx)
+                                #e invalida o projetil
                                 i.valid=False
                         #se algum inimigo tomou dano:
                         else:
                             for a in render.enemy_ships:
+                                #se tiver viva
+                                    #verifica se colidiu
                                 if a.rect.colliderect(i.rect):
-                                    a.take_damage(i)
+                                    if a.alive:
+                                        #na funcao take damage, retorna se ela acabou de morrer, pois outros projeteis
+                                        #podem pegar ao memsmo tempo
+                                        if a.take_damage(i):
+                                            #se tudo occoreu bem voce leva o dinheiro para casa
+                                            menu.player.money+=a.value
+                                    #invalida o projetil
                                     i.valid=False
 
 
@@ -546,28 +603,29 @@ while 1:
             for i in render.enemy_ships:
                 i.fire()
 
-            main_engine_fps+=1
 
+            main_engine_fps+=1
             if pygame.time.get_ticks()-main_engine_fps_clock >=1000:
                 main_engine_fps_clock=pygame.time.get_ticks()
                 main_engine_fps_show=main_engine_fps
                 main_engine_fps=0
 
 
-                #debug_text
-            renderer.debug_text.update_text('Mouse: X,Y('+str(menu.cursor.posX)\
+            #debug_text
+            renderer.debug_text.update_text('X,Y('+str(menu.cursor.posX)\
                                             +'  '+str(menu.cursor.posY)+')'\
-                                            +'  dX,dY('+str(menu.cursor.posdX)\
-                                            +'  '+str(menu.cursor.posdY)+')'\
-                                            +'  m1,m2,m3'+str(menu.cursor.buttons)\
-                                            +'  desiredpos('+str(desired_pos)+')'\
-                                            +'   nProj:'+str(len(render.projectiles))\
-                                            +'   nObj:'+str(len(render.objects))\
-                                            +'   backgrounds:'+str(render.background.objects[0].rect.top)+','+str(render.background.objects[1].rect.top)+','+str(render.background.objects[2].rect.top)\
-                                            +'   nAnim:'+str(len(render.sprites))\
-                                            +'   nEnemy:'+str(len(render.enemy_ships))\
-                                            +'   HP:'+str(menu.player.ship.energy_module.current_hp)\
-                                            +'   shield:'+str(menu.player.ship.shield.current_hp)\
-                                            +'   time:'+str(pygame.time.get_ticks())\
-                                            +'   MainFPS:'+str(main_engine_fps_show)\
-                                            +'   RenderFPS:'+str(renderer.fps_show),colors.WHITE)
+                                            +'  mBtt'+str(menu.cursor.buttons)\
+                                            +'  dpos('+str(desired_pos)+')'\
+                                            +'  nProj:'+str(len(render.projectiles))\
+                                            +'  nObj:'+str(len(render.objects))\
+                                            +'  nAnim:'+str(len(render.sprites))\
+                                            +'  nEnemy:'+str(len(render.enemy_ships))\
+                                            +'  HP:'+str(menu.player.ship.energy_module.current_hp)\
+                                            +'  Shld:'+str(menu.player.ship.shield.current_hp)\
+                                            +'  plyr$:'+str(menu.player.money)\
+                                            +'  Time:'+str(pygame.time.get_ticks())\
+                                            +'  Dist:'+str(distance)\
+                                            +'  Enemy:'+str(current_ship)+'/'+str(total_ships)\
+                                            +'  MainFPS:'+str(main_engine_fps_show)\
+                                            +'  RenderFPS:'+str(renderer.fps_show)\
+                                            +'  fTime: '+str(renderer.frametime)+'ms',colors.WHITE)

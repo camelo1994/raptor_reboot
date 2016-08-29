@@ -11,10 +11,13 @@ projectiles=[]#$
 sprays=[]#$
 sprites=[]#$
 shield_UI=[]#$-sao as barras laterais
-hp_UI=[]#$
+hp_UI=[]#$-barra lateral
 enemy_ships=[]#sao as naves inimgas e elas se blitam
+shadows=[]
+
 background=None
 player=None
+player_shadow=None
 
 
 def update_list(list,spritelist=False,flaga=None,flagb=None):
@@ -51,7 +54,7 @@ class Blit:
 
 
 class render_thread_class(threading.Thread):
-    def __init__(self,sresH,sresV,windowname,crosshair_file,frametime):
+    def __init__(self,sresH,sresV,windowname,crosshair_file,fps,enable_shadows):
         #from classes import menu
         self.print('Initializing render thread...')
         threading.Thread.__init__(self)
@@ -70,15 +73,17 @@ class render_thread_class(threading.Thread):
         #startclock
         self.Clocktime=0
         self.fpscounterclock=0
-        self.oi=pygame.time.Clock()
+        self.desired_fps=fps
         self.fps=0
         self.fps_show=0
-        if frametime!=0:
-            self.print('Frametime: '+str(frametime))
-            self.print('Max FPS: '+str(1//((frametime)/1000)))
+        if self.fps!=0:
+            self.frametime=(1//self.desired_fps)*1000
+            self.print('Frametime: '+str(self.frametime))
+            self.print('Max FPS: '+str(fps))
         else:
+            self.frametime=0
             self.print('Frametime set to 0, running max fps')
-        self.timeinterval=frametime
+
 
         #flags
         self.run_flag=True
@@ -86,6 +91,7 @@ class render_thread_class(threading.Thread):
         self.show_player=False
         self.blit_flags=Blit()
         self.background=False
+        self.enable_shadows=enable_shadows
 
         #debug
         debug_filepath='fonts/AndikaNewBasic-R.ttf'
@@ -117,7 +123,7 @@ class render_thread_class(threading.Thread):
         self.print('Objects -> Projectiles->Texts -> Lines -> Buttons\n')
 
         while self.run_flag:
-            if pygame.time.get_ticks()-self.Clocktime>=self.timeinterval:
+            if pygame.time.get_ticks()-self.Clocktime>=self.frametime:
                 self.Clocktime=pygame.time.get_ticks()
 
                 #printa o fundo
@@ -129,6 +135,10 @@ class render_thread_class(threading.Thread):
                 #prita objetos estaticos soltos
                 for i in objects:
                     self.screen.blit(i.image,i.rect)
+
+                if self.enable_shadows:
+                    if self.show_player:
+                        self.screen.blit(player_shadow.image,player_shadow.rect)
 
                 #printa os projeteis - tem seu proprio blit()
                 for i in projectiles:
@@ -169,10 +179,62 @@ class render_thread_class(threading.Thread):
 
                 pygame.display.update()
                 self.fps+=1
-                if (pygame.time.get_ticks()-self.fpscounterclock)>1000:
+
+                #self control de fps
+                if (pygame.time.get_ticks()-self.fpscounterclock)>500:
                     self.fpscounterclock=pygame.time.get_ticks()
-                    self.fps_show=self.fps
+                    self.fps_show=self.fps*2
                     self.fps=0
+                    if self.desired_fps != 0:
+                        if self.fps_show>self.desired_fps+10:
+                            if self.frametime<25:
+                                self.frametime+=1
+                        elif self.fps_show<self.desired_fps-3:
+                            if self.frametime>1:
+                                self.frametime-=1
+
 
         self.print('Finishing render thread.')
 
+
+class updater_thread_class(threading.Thread):#NAO IMPLEMENTADO -DEU RUIM
+    def __init__(self,bg):
+        self.print('Initalizing updater thread ...')
+        threading.Thread.__init__(self)
+        self.run_flag=True
+        self.enable=False
+        self.clock=pygame.time.get_ticks()
+        self.time=10
+        self.bg=bg
+
+    def play(self):
+        self.print('Resuming...')
+        self.enable=True
+
+    def pause(self):
+        self.print('Pausing...')
+        self.enable=False
+
+    def print(self,str):
+        print(Fore.LIGHTBLUE_EX+'[POS-UPDTR] '+Fore.RESET+str)
+
+    def run(self):
+        self.print('Starting with pause state')
+        while self.run_flag:
+            if self.enable:
+                if pygame.time.get_ticks()-self.clock>=self.time:
+                    self.clock=pygame.time.get_ticks()
+                    update_list(projectiles)
+                    update_list(sprites)
+                    update_list(enemy_ships)
+            else:
+                pygame.time.wait(500)
+
+        pygame.time.wait(100)
+
+
+
+
+
+
+        self.print('Finishing updater thread.')

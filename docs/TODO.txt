@@ -1,12 +1,11 @@
 
 TO DO LIST:
 reduzir tamanho das sparks?:???????
+CLAREAR AS SOMBRAS
 
-
-
-FUNDO ROLANDO PRA TRAS!!!!
-
-
+implementar:
+ 2=lista de caminhos em um arquivo + interpretador+lista de naves+interpretador
+ 1=sombras
 
 mixxer durante missao
 ch0-bgm menu

@@ -9,6 +9,7 @@ data_db=None
 data_db_cursor=None
 items_db=None
 items_db_cursor=None
+enable_shadows=None
 sprites_dict={}
 audio_dict={}
 enemy_dict={}
@@ -18,8 +19,8 @@ sresV=800
 
 
 #inicializacoes
-def init(a,b):
-    global data_db,items_db,data_db_cursor,items_db_cursor
+def init(a,b,c):
+    global data_db,items_db,data_db_cursor,items_db_cursor,enable_shadows
     #connect to Database
     print('SQL: Connecting to SQL database: '+a)
     data_db=sqlite3.connect(a)
@@ -30,6 +31,7 @@ def init(a,b):
     start_sprite_dict()
     start_audio_dict()
     start_enemy_dict()
+    enable_shadows=c
 
 
 class sprite_data:
@@ -53,15 +55,13 @@ def start_sprite_dict():
         sprites_dict['small_explosion']=sprite_data(aux,64,64)<-----altura e largura
     '''
 
-
     #'small_explosion'
     spritelist=[]
     for i in range(14):
         aux='sprites/small_explosion/'+str(i)+'.png'
-        spritelist.append((aux,100))
+        spritelist.append((aux,50))
         aux=pyganim.PygAnimation(spritelist)
         sprites_dict['small_explosion']=sprite_data(aux,64,64)
-
 
     #'medium_explosion'
     spritelist=[]
@@ -70,7 +70,6 @@ def start_sprite_dict():
         spritelist.append((aux,50))
         aux=pyganim.PygAnimation(spritelist)
         sprites_dict['medium_explosion']=sprite_data(aux,160,160)
-
 
     #'blue spark'
     name='blue_spark'
@@ -81,7 +80,6 @@ def start_sprite_dict():
         aux=pyganim.PygAnimation(spritelist)
         sprites_dict[name]=sprite_data(aux,60,60)
 
-
     #'red_spark'
     name='red_spark'
     spritelist=[]
@@ -90,7 +88,6 @@ def start_sprite_dict():
         spritelist.append((aux,20))
         aux=pyganim.PygAnimation(spritelist)
         sprites_dict[name]=sprite_data(aux,60,60)
-
 
     #shield da nave
     spritelist=[]
@@ -161,13 +158,10 @@ def play_sound(key):
         print('There is no audio: '+key)
 
 
-def spawn(ID,posx):
-    n=len(render.enemy_ships)
-
+def spawn(ID):
     if ID==0:
-        render.enemy_ships.append(enemy_ship_0())
+        return enemy_ship_0()
 
-    render.enemy_ships[n].start(posx)
 
 #CLASSES GERAIS
 class text:#(str,ttf_file,size,color,cx,cy,abs?) none=center / 1=topleft / 2=topright
@@ -233,8 +227,9 @@ class Player:
         self.shipindex=aux[5]
 
         self.ship=Ship(self.shipindex)
+
         #internal
-        self.money=50000
+        self.money=aux[6]
 
         #pygame stuff
         picture_file_path='images/profiles/'+str(self.imageindex)+'.jpg'
@@ -291,14 +286,15 @@ class Cursor:
 
 class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
     def __init__(self,crosshair_file,bgm_file,bgm_file2,button_sound_file,button_select_file):
+        print('\t')
         self.print('Initializing menu...')
 
         #control variables
         self.status='loading'
         self.next_status=''
         self.in_menu=True
-        self.changed=False
         self.ops=[]
+        self.player_list=[]
         self.lastop=None
         self.op=None
         self.player_text_index=None
@@ -307,9 +303,13 @@ class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
 
         #read saved data
         self.read_user_settings()
-        self.player=self.read_player_profiles(self.profileindex)
+        self.read_player_profiles()
 
-        #start subsystems 
+        self.print('Active player: '+str(self.active_player))
+        self.player=self.player_list[self.active_player-1]
+        self.selected_player=self.active_player
+
+        #start subsystems
         self.print('Initalizing audio')
         self.button_sound=None
         self.select_sound=None
@@ -346,27 +346,31 @@ class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
 
         self.bgm_volume=self.settings[0]
         self.bgm_status=self.settings[1]
-        self.profileindex=self.settings[2]
+        self.active_player=self.settings[2]
 
-    def read_player_profiles(self,i):
-
+    def read_player_profiles(self):
+        global data_db_cursor
+        self.print('Reading profiles...')
         data_db_cursor.execute('SELECT * FROM profiles')
         self.profile_list=data_db_cursor.fetchall()
+        n=len(self.profile_list)
 
-        print('\t'+str(len(self.profile_list))+' Profiles detected')
-        for n in self.profile_list:
-            print('\t'+str(n))
-
-        print('\n\tReading profile #'+str(i))
-        aux=self.profile_list[i]
-
-        return Player(aux)
+        self.print(str(n)+' Profiles detected')
+        for i in self.profile_list:
+            self.print('\tProfile line: '+str(i))
+            self.print('\tSetting player: #'+str(i[0]-1))
+            self.player_list.append(Player(i))
+        print('\t')
 
     def save_data(self):
         self.print('Saving data')
         self.print('\t Global settings..')
-        aux='UPDATE settings SET'+' bgm_volume='+str(self.bgm_volume)+','+'last_player='+str(self.profileindex)
         global data_db_cursor,data_db
+
+        aux='UPDATE settings SET'+' bgm_volume='+str(self.bgm_volume)+','+'last_player='+str(self.profileindex)
+        data_db_cursor.execute(aux)
+
+        aux='UPDATE profiles SET'+' Money='+str(self.player.money)+' WHERE id='+str(self.profileindex)
         data_db_cursor.execute(aux)
         self.print('\tCommiting database')
         data_db.commit()
@@ -437,23 +441,15 @@ class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
         self.cursor.update(renderer)
         return self.sel_update()
 
-    def swap_player(self,direction,revese=None):
-        if direction=='+' and (self.profileindex+1)<=(len(self.profile_list)-1):
-            self.profileindex+=1
-
-            self.player=Player(self.profile_list[self.profileindex])
-            self.print(
-                '\tPlayer loaded: #'+str(self.profileindex)+' -> '+str(self.player.name+' '+str(self.player.callsign)))
+    def swap_player(self,direction):
+        if direction=='+' and (self.selected_player+1)<=(len(self.player_list)):
+            self.selected_player+=1
             self.update_menu_profile_data()
             if self.selected:
                 render.texts.pop()
 
-        elif direction=='-' and (self.profileindex-1)>=0:
-            self.profileindex-=1
-
-            self.player=Player(self.profile_list[self.profileindex])
-            self.print(
-                '\tPlayer loaded: #'+str(self.profileindex)+' -> '+str(self.player.name)+' '+str(self.player.callsign))
+        elif direction=='-' and (self.selected_player-1)>=0:
+            self.selected_player-=1
             self.update_menu_profile_data()
             if self.selected:
                 render.texts.pop()
@@ -461,24 +457,24 @@ class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
         elif direction=='*':
             filepath='fonts/major_shift.ttf'
             self.print('loading file: '+filepath)
-            render.texts.append(classes.text('player selected',filepath,24,colors.RED,970,700,1))
-            self.selected=True
-            self.lastprofile=self.profileindex
+            render.texts.append(text('player selected',filepath,24,colors.RED,970,700,1))
+
+            self.active_player=self.selected_player
+            self.player=self.player_list[self.active_player-1]
+            pygame.time.delay(400)
+            self.swap('main')
 
 
         elif direction=='**':
-            self.profileindex=self.lastprofile
-            self.player=Player(self.profile_list[self.profileindex])
-            self.print(
-                '\tPlayer loaded: #'+str(self.profileindex)+' -> '+str(self.player.name)+' '+str(self.player.callsign))
+            self.selected_player=self.active_player
             self.update_menu_profile_data()
             self.swap('main')
 
     def update_menu_profile_data(self):
-        render.objects[len(render.objects)-1].change_image(self.player.image)
-        render.texts[self.player_text_index].update_text(self.player.name)
-        render.texts[self.player_text_index+1].update_text(self.player.callsign)
-        render.texts[self.player_text_index+2].update_text(self.player.shipname)
+        render.objects[len(render.objects)-1].change_image(self.player_list[self.selected_player-1].image)
+        render.texts[self.player_text_index].update_text(self.player_list[self.selected_player-1].name)
+        render.texts[self.player_text_index+1].update_text(self.player_list[self.selected_player-1].callsign)
+        render.texts[self.player_text_index+2].update_text(self.player_list[self.selected_player-1].shipname)
 
     def print(self,str):
         print(Fore.BLUE+'[MENU] '+Fore.RESET+str)
@@ -581,6 +577,7 @@ class MenuButton(Object):#(imagefileA,imagefileB,PosH,PosV,mode=None):
         else:
             self.image=self.imageB
 
+
 #BACKGROUND
 class Background:
     def __init__(self,image,vy):
@@ -657,7 +654,6 @@ class Weapon:
         #pygame stuff
         #image-self
         file='images/weapons/'+str(self.data[1])+'.png'
-        print(file)
         self.image=pygame.image.load(file).convert_alpha()
         self.image=pygame.transform.scale(self.image,(50,50))
 
@@ -696,14 +692,14 @@ class AA_missle(Weapon):
             self.clock=pygame.time.get_ticks()
             #poe os 2 projeteis
             render.projectiles.append(Projectile(self.projectile_image,pos[0]+20,pos[1],0,self.projectile_speedV,
-                                                 anim=Animation(self.anim,
-                                                                anim_rect(pos[0]+20+5,pos[1]+20,0,
+                                                 anim=Animation(self.anim,anim_rect(pos[0]+20+5,pos[1]+20,0,
                                                                                     self.projectile_speedV,8,20),True),
                                                  friendly=True,damage=self.damage,origin=self.name))
             render.projectiles.append(Projectile(self.projectile_image,pos[0]-27,pos[1],0,self.projectile_speedV,
                                                  anim=Animation(self.anim,
                                                                 anim_rect(pos[0]-22,pos[1]+20,0,self.projectile_speedV,
-                                                                          8,20),True),friendly=True,damage=self.damage,origin=self.name))
+                                                                          8,20),True),friendly=True,damage=self.damage,
+                                                 origin=self.name))
             n=len(render.sprites)
 
             #toca barulinho
@@ -723,7 +719,7 @@ class Machine_gun(Weapon):
         # audio
         aux='sounds/weapons/mg.ogg'
         self.fire_sound=pygame.mixer.Sound(aux)
-        self.fire_sound.set_volume(0.3)
+        self.fire_sound.set_volume(0.5)
 
     def fire(self,pos):
         # verifica se pode atirar
@@ -834,11 +830,14 @@ class Energy_module:
 class Ship:
     def __init__(self,index):
         global items_db_cursor,data_db_cursor
+
         data_db_cursor.execute('SELECT * FROM ships WHERE ID='+str(index))
         shipdata=data_db_cursor.fetchall()[0]
+
         #define self data
-        print('Defining ship: ')
-        print(shipdata)
+        print('\n')
+        self.print('Defining ship: ')
+        self.print('Ship line: '+str(shipdata))
 
         self.energy_percent=shipdata[7]
         self.shield_percent=shipdata[8]
@@ -866,57 +865,79 @@ class Ship:
         self.jet_status=False
 
         #lista com 5 images de inclina??o 0->4
-        print('\t loading ship images...')
-        imagespath='images/ship/'+str(self.skin)+'/ship_'
-        self.images=[]
-        aux=imagespath+'lean_left_2.png'
-        self.images.append(pygame.image.load(aux).convert_alpha())
-        aux=imagespath+'lean_left_1.png'
-        self.images.append(pygame.image.load(aux).convert_alpha())
-        aux=imagespath+'straight.png'
-        self.images.append(pygame.image.load(aux).convert_alpha())
-        aux=imagespath+'lean_right_1.png'
-        self.images.append(pygame.image.load(aux).convert_alpha())
-        aux=imagespath+'lean_right_2.png'
-        self.images.append(pygame.image.load(aux).convert_alpha())
+        if 1:
+            self.print('\t loading ship images...')
+            imagespath='images/ship/'+str(self.skin)+'/ship_'
+            self.images=[]
+            aux=imagespath+'lean_left_2.png'
+            self.images.append(pygame.image.load(aux).convert_alpha())
+            aux=imagespath+'lean_left_1.png'
+            self.images.append(pygame.image.load(aux).convert_alpha())
+            aux=imagespath+'straight.png'
+            self.images.append(pygame.image.load(aux).convert_alpha())
+            aux=imagespath+'lean_right_1.png'
+            self.images.append(pygame.image.load(aux).convert_alpha())
+            aux=imagespath+'lean_right_2.png'
+            self.images.append(pygame.image.load(aux).convert_alpha())
 
-        for i in range(5):
-            self.images[i]=pygame.transform.scale(self.images[i],(68,80))
+            for i in range(5):
+                self.images[i]=pygame.transform.scale(self.images[i],(68,80))
 
-        #assume a posi??o central como padrao
-        self.image=self.images[2]
-        self.rect=self.image.get_rect()
-        self.rect.center=(640,750)
-        self.print('\timages-OK')
+            #assume a posi??o central como padrao
+            self.image=self.images[2]
+            self.rect=self.image.get_rect()
+            self.rect.center=(640,750)
 
         #carrega os sprites
         #todos tem 8px de largura
         #só serao colocados no render qnd entrar em batalha
-        self.print('\t loading jet sprays...')
-        imagespath='images/ship/'+str(self.skin)+'/jet_spray/'
-        self.images_spray=[]
-        aux=imagespath+'spray10.png'
-        self.images_spray.append(pygame.image.load(aux).convert_alpha())
-
-        for i in range(11):
-            aux=imagespath+'spray'+str(20+(i*2))+'.png'
+        if 1:
+            self.print('\t loading jet sprays...')
+            imagespath='images/ship/'+str(self.skin)+'/jet_spray/'
+            self.images_spray=[]
+            aux=imagespath+'spray10.png'
             self.images_spray.append(pygame.image.load(aux).convert_alpha())
 
-        #sprite do shield tomando dano
-        self.shield_anim=sprites_dict.get('ship_shield')
-        self.shield_anim._loop=False
+            for i in range(11):
+                aux=imagespath+'spray'+str(20+(i*2))+'.png'
+                self.images_spray.append(pygame.image.load(aux).convert_alpha())
 
-        aux='images/ship/shield/0.png'
-        self.shield_image=pygame.image.load(aux).convert_alpha()
-        self.shield_rect=self.shield_image.get_rect()
-        self.shield_rect.centerx=self.rect.centerx
-        self.shield_rect.centery=self.rect.centery
+            #sprite do shield tomando dano
+            self.shield_anim=sprites_dict.get('ship_shield')
+            self.shield_anim._loop=False
+
+            aux='images/ship/shield/0.png'
+            self.shield_image=pygame.image.load(aux).convert_alpha()
+            self.shield_rect=self.shield_image.get_rect()
+            self.shield_rect.centerx=self.rect.centerx
+            self.shield_rect.centery=self.rect.centery
 
         #audio para tomar dano
+        if 1:
+            aux='sounds/ship/shield.ogg'
+            self.shield_sound=pygame.mixer.Sound(aux)
+            self.shield_sound.set_volume(1)
 
-        aux='sounds/ship/shield.ogg'
-        self.shield_sound=pygame.mixer.Sound(aux)
-        self.shield_sound.set_volume(1)
+        #sombras
+        if 1:
+            if enable_shadows:
+                self.print('\t loading ship shadows...')
+                imagespath='images/ship/'+str(self.skin)+'/shadows/ship_'
+                self.shadow_images=[]
+                aux=imagespath+'lean_left_2.png'
+                self.shadow_images.append(pygame.image.load(aux).convert_alpha())
+                aux=imagespath+'lean_left_1.png'
+                self.shadow_images.append(pygame.image.load(aux).convert_alpha())
+                aux=imagespath+'straight.png'
+                self.shadow_images.append(pygame.image.load(aux).convert_alpha())
+                aux=imagespath+'lean_right_1.png'
+                self.shadow_images.append(pygame.image.load(aux).convert_alpha())
+                aux=imagespath+'lean_right_2.png'
+                self.shadow_images.append(pygame.image.load(aux).convert_alpha())
+
+                #for i in self.shadow_images:
+                   # i.set_alpha(50)
+                render.player_shadow=Object(self.shadow_images[2],400,400,0,0)
 
     def move(self,p):
         x=p[0]-self.rect.centerx
@@ -926,6 +947,10 @@ class Ship:
 
             #anda a nave
             self.rect.move_ip(x,y)
+
+            if enable_shadows:
+                render.player_shadow.rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
+                render.player_shadow.rect.centery=interpolate(self.rect.centery,40,760,-80,880)
 
             #anda os jatinhos
             render.sprays[0].rect.move_ip(x,y)
@@ -939,30 +964,32 @@ class Ship:
                 #inclina??o
                 if x<-9:
                     self.image=self.images[0]
+                    if enable_shadows:
+                        render.player_shadow.image=self.shadow_images[0]
                     self.direction=False
                     render.sprays[0].rect.right=self.rect.centerx+2
                     render.sprays[1].rect.left=self.rect.centerx-2
-
                 elif x<-5:
                     self.image=self.images[1]
+                    if enable_shadows:
+                        render.player_shadow.image=self.shadow_images[1]
                     self.direction=False
                     render.sprays[0].rect.right=self.rect.centerx-2
                     render.sprays[1].rect.left=self.rect.centerx+2
-
                 elif x<5:
                     if self.direction!=None:
                         self.image=self.images[2]
+                        if enable_shadows:
+                            render.player_shadow.image=self.shadow_images[2]
                         self.direction=None
                         render.sprays[0].rect.right=self.rect.centerx-5
                         render.sprays[1].rect.left=self.rect.centerx+5
                 elif x<12:
                     self.image=self.images[3]
+                    if enable_shadows:
+                        render.player_shadow.image=self.shadow_images[3]
                     self.direction=True
                     render.sprays[0].rect.right=self.rect.centerx-2
-                    render.sprays[1].rect.left=self.rect.centerx+2
-
-                else:
-                    self.image=self.images[4]
                     self.direction=True
                     render.sprays[0].rect.right=self.rect.centerx+2
                     render.sprays[1].rect.left=self.rect.centerx-2
@@ -997,7 +1024,6 @@ class Ship:
             #define um index n, do grau de jato, 11 mais forte, 0 fraco
             #se esta em um mivel novo,é automaticamente alterado, se nao randomiza
             #a cada 200ms
-
             if self.last_jet==n and pygame.time.get_ticks()-self.jet_status_time>=200:
                 self.jet_status_time=pygame.time.get_ticks()
                 if self.jet_status:
@@ -1104,11 +1130,10 @@ def damage_taken_sprite_selector(origin):
         else:
             return 'red_spark'
 
-
-
     #aa_missle
     if origin=='Air/Air Missle':
         return 'small_explosion'
+
 
 class enemy_ship_0():
     def __init__(self):
@@ -1119,7 +1144,8 @@ class enemy_ship_0():
 
         self.hp=self.data[1]
         self.cooldown=int((1/self.data[2])*1000)
-        self.speed=1#1*self.data[3]
+        self.speed=self.data[3]
+        self.value=1000
 
         #definir weapon
         self.weapon=flak(self.data[4])
@@ -1127,6 +1153,7 @@ class enemy_ship_0():
         self.offsetR=self.data[6]
 
         self.alive=True
+        self.was_killed=False
 
         #definir imagem
         aux='images/ship/enemies/0.png'
@@ -1195,6 +1222,13 @@ class enemy_ship_0():
         #se morreu...
         if self.hp<=0:
             self.alive=False
+            self.was_killed=True
             spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')#--tem q ser a medium
             play_sound('medium_explosion')
             return True
+
+
+#auxiliaressssssss
+
+def interpolate(value,fromLow,fromHigh,toLow,toHigh):
+    return ((toHigh-toLow)/(fromHigh-fromLow))*(value-fromLow)+toLow

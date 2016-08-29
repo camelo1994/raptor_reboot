@@ -12,8 +12,6 @@ class Mixer(threading.Thread):
         self.print('\tFreq:'+str(bitrate/1000)+'kHz - Ch'+str(channels)\
                    +' - buffer'+str(buffersize)+'bits\n')
         pygame.mixer.set_num_channels(channels)
-        print (pygame.mixer.get_num_channels())
-
 
         self.run_flag=True
 
