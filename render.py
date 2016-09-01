@@ -140,6 +140,8 @@ class render_thread_class(threading.Thread):
                 if self.enable_shadows:
                     if self.show_player:
                         self.screen.blit(player_shadow.image,player_shadow.rect)
+                    for i in enemy_ships:
+                        i.blit_shadow(self.screen)
 
                 #printa os projeteis - tem seu proprio blit()
                 for i in projectiles:

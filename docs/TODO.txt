@@ -1,15 +1,9 @@
 
 TO DO LIST:
 reduzir tamanho das sparks?:???????
-CLAREAR AS SOMBRAS
+
 
 implementar:
- 2=lista de caminhos em um arquivo da nave
- 1= interpretador+lista de naves+interpretador
- -> fazendo estes!!
- -> falta: acertar as velocidades, lembre- menor unidade para andar 1pixel em x, em y 0.5
- -> acertar ffuncao de achar velocidade, de tal forma que supra esses valores
-
 
  3=ajuste global de volume
  4=tela de loading

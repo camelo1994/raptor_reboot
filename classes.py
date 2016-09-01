@@ -1,5 +1,5 @@
 import mouse_spots,colors,def_lib,render,sound_engine
-import sqlite3,pygame,pyganim,random,colorama,copy,math
+import sqlite3,pygame,pyganim,random,colorama,copy,math,csv
 from render import *
 from sound_engine import *
 from colorama import Fore
@@ -132,7 +132,6 @@ def start_enemy_dict():
     #aux=enemy_ship_0()
     #enemy_dict['0']=enemy_ship_0()
 
-
 #chamadas DE SPAWN
 def spawn_sprite(x,y,key,dx=0,dy=0):
     global sprites_dict
@@ -158,9 +157,59 @@ def play_sound(key):
         print('There is no audio: '+key)
 
 
-def spawn(ID):
+'''
+Para spawnar ships inimigas, deve-se informar
+
+ID da nave
+distancia em Y para spawn
+lista de posicoes no seguinte padrao:
+tupla:
+[(x1,y1,t1-2),(x2,y2,t2-3),(xn-1,yn-1,t(n-1)-n),(xn,yn)]
+
+tempo em milisegundos entre posiçoes
+'''
+def spawn(ID,spawn_distance,pos_list):
     if ID==0:
-        return enemy_ship_0()
+        return enemy_ship_0(pos_list=pos_list,spawn_dist=spawn_distance)
+
+#leitura do arquivo csv, tipo pode melhorar bastante ainda!
+def load_wave_list(id,list):
+    aux='waves/'+id+'.csv'
+    file=open(aux,'+r')
+    data=csv.reader(file,delimiter=',')
+    ni=0
+
+    for i in data:
+        if ni<2:
+            if ni==1:
+                b=int(i[0])
+            ni+=1
+        else:
+            ni+=1
+            a=i
+            distance=int(a[0])
+            id=int(a[1])
+            n=int(a[2])
+            points=[]
+            for j in range(1,n+1):
+                if j<n:
+                    k=j*3
+                    p=(int(a[k]),int(a[k+1]),int(a[k+2]))
+                    points.append(p)
+                else:
+                    k=j*3
+                    p=(int(a[k]),int(a[k+1]))
+                    points.append(p)
+
+            print('\n')
+            print('ni'+str(ni)+' pts,id,dist')
+            print(points)
+            print(id)
+            print(distance)
+
+            list.append(spawn(id,distance,points))
+    file.close()
+    return b
 
 
 #CLASSES GERAIS
@@ -1143,7 +1192,7 @@ def damage_taken_sprite_selector(source):
 
 
 class enemy_ship_0:
-    def __init__(self,pos_list=None):
+    def __init__(self,*args,**kwargs): #tem q passar pos_list,e spawn_dist nos kwargs
         global data_db_cursor
         #read data
         data_db_cursor.execute('SELECT * FROM enemies WHERE ID=0')
@@ -1151,23 +1200,22 @@ class enemy_ship_0:
 
         self.hp=self.data[1]
         self.cooldown=int((1/self.data[2])*1000)
-        self.speed=self.data[3]
         self.value=1000
 
         #lista de pontos de posicionamento
-        self.pos_list=[(450,-200,500),(450,800,1000),(800,300,1000),(1280,1000)]
+        self.pos_list=kwargs.get('pos_list')
 
         #lista de velocidades entre pontos
-        self.speed_list=get_speed_list(self.pos_list,self.speed)
+        self.speed_list,self.max_speed=get_speed_list(self.pos_list)
 
         #posicção inicial=0
         self.pos_n=0
-        self.pos_max=3
+        self.pos_max=len(self.pos_list)-2
 
         self.vx=self.speed_list[self.pos_n][0]
         self.vy=self.speed_list[self.pos_n][1]
-
-
+        self.x=self.pos_list[0][0]
+        self.y=self.pos_list[0][1]
 
         #definir weapon
         self.weapon=flak(self.data[4])
@@ -1177,14 +1225,13 @@ class enemy_ship_0:
         #controle da engine principal
         self.alive=True
         self.was_killed=False
-        self.spawn_distance=200
+        self.spawn_distance=kwargs.get('spawn_dist')
 
         #definir imagem
         aux='images/ship/enemies/0.png'
         self.image=pygame.image.load(aux).convert_alpha()
         self.rect=self.image.get_rect()
-        self.rect.center=(self.pos_list[0][0],self.pos_list[0][1])
-        print(self.rect.center)
+        self.rect.center=(self.x,self.y)
 
         aux='images/ship/0/jet_spray/spray40.png'
         self.jet=pygame.image.load(aux).convert_alpha()
@@ -1208,7 +1255,7 @@ class enemy_ship_0:
             self.shadow_image=pygame.image.load(aux).convert_alpha()
             self.shadow_rect=self.shadow_image.get_rect()
             self.shadow_rect.center=(-1000,-1000)
-
+        self.time=0
 
     def fire(self):
         if pygame.time.get_ticks()-self.weapon.clock>=self.cooldown:
@@ -1223,21 +1270,24 @@ class enemy_ship_0:
 
     def update_rect(self):
         #move
-        if check_point(self.pos_list[self.pos_n+1],self.rect.center,5):
+        if check_point(self.pos_list[self.pos_n+1],self.rect.center,self.max_speed):
             if self.pos_n<self.pos_max:
                 self.pos_n+=1
                 self.vx=self.speed_list[self.pos_n][0]
                 self.vy=self.speed_list[self.pos_n][1]
-                print(self.pos_n)
-                print(self.vx,self.vy)
-        #print(self.pos_n)
-        print(self.rect.center)
-        self.rect.left+=self.vx
-        self.rect.centery+=self.vy
+                print(pygame.time.get_ticks()-self.time)
+                self.time=pygame.time.get_ticks()
+
+        self.x+=self.vx
+        self.y+=self.vy
+        self.rect.center=(self.x,self.y)
 
         #acerta os jatos
-        for i in self.jets:
-            i.rect=i.rect.move(0,self.speed)
+        self.jets[0].rect.centerx=self.rect.centerx-32
+        self.jets[1].rect.centerx=self.rect.centerx+32
+        self.jets[0].rect.centery=self.rect.centery-35
+        self.jets[1].rect.centery=self.rect.centery-35
+
         if pygame.time.get_ticks()-self.jet_time>=100:
             self.jet_time=pygame.time.get_ticks()
             if self.jet_style:
@@ -1261,6 +1311,8 @@ class enemy_ship_0:
         for i in self.jets:
             screen.blit(i.image,i.rect)
         screen.blit(self.image,self.rect)
+
+    def blit_shadow(self,screen):
         screen.blit(self.shadow_image,self.shadow_rect)
 
     def take_damage(self,source):
@@ -1294,34 +1346,36 @@ def get_speed(start,end):
     #start tem 3 elementos o 3o eh o tempo
     x=end[0]-start[0]
     y=end[1]-start[1]
+    t=start[2]/16
+
     if x!=0 and y!=0:
-        a=(x/start[2],y/start[2])
+        a=(x/t,y/t)
     elif y==0 and x!=0:
-        a=(x/start[2],0)
+        a=(x/t,0)
     elif x==0 and y!=0:
-        a=(0,y/start[2])
+        a=(0,y/t)
     else:
         a=(0,0)
-    if a[0]>=1 and a[1]>=1:
-        return a
-    else:
-        start=(start[0],start[1],start[2]-10)
-        return get_speed(start,end)
-    #return (chk_sign(x)*a[0],chk_sign(y)*a[1])
+    return a
 
 
-def get_speed_list(list,v):
+def get_speed_list(list):
     n=len(list)-1
     speed_list=[]
+    max=0
     for i in range(n):
         start=(list[i][0],list[i][1],list[i][2])
         end=(list[i+1][0],list[i+1][1])
         speed_list.append(get_speed(start,end))
-    return speed_list
+
+    for i in speed_list:
+        if i[0]>max:
+            max=i[0]
+        if i[1]>max:
+            max=i[1]
+
+    return speed_list,max
 
 
-def check_point(desired,current,tolerance):
-    #print(abs(desired[0]-current[0]))
-    #print(abs(desired[1]-current[1]))
-
-    return abs(desired[0]-current[0])<=tolerance and abs(desired[1]-current[1])<=tolerance
+def check_point(desired,current,tol):
+    return abs(desired[0]-current[0])<=tol and abs(desired[1]-current[1])<=tol

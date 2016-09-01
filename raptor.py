@@ -325,6 +325,19 @@ while 1:
             menu.cursor.diff_mode()
             #esconde o cursor
             renderer.show_cursor=False
+
+            wave='a0'
+            print('Loading enemy ships list - may take some time (wave '+str(wave)+')')
+
+            total_ships=classes.load_wave_list(wave,enemy_ships)
+            next_ship_spawn=enemy_ships[0]
+            next_ship=0
+            wave_over=False
+            overtime=1000
+            last_ship_killed_time=-1
+
+
+            #inits basicos
             if 1:
                 #define canal 2 - bgm
                 wave_bgm_file='bgm/raptor02.ogg'
@@ -361,20 +374,6 @@ while 1:
                 menu.player.ship.enter_battle()
 
                 kappa=pygame.time.get_ticks()
-
-
-            print('Loading enemy ships list - may take some time')
-            '''for i in range(2):
-                a=i*100
-                enemy_ships.append((a,classes.spawn(0),random.randrange(sresH)))'''
-
-            enemy_ships.append(classes.spawn(0))
-            next_ship_spawn=enemy_ships[0]
-            next_ship=0
-            total_ships=1
-            wave_over=False
-            overtime=1000
-            last_ship_killed_time=-1
 
         menu.done_loading()#informa ao menu,que Load/Unloads foram realizados
 
