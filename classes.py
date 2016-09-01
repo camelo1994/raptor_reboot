@@ -1,5 +1,5 @@
 import mouse_spots,colors,def_lib,render,sound_engine
-import sqlite3,pygame,pyganim,random,colorama,copy
+import sqlite3,pygame,pyganim,random,colorama,copy,math
 from render import *
 from sound_engine import *
 from colorama import Fore
@@ -129,8 +129,8 @@ def start_enemy_dict():
     print('Initializing enemies dictionary')
 
     #enemy #0
-    aux=enemy_ship_0()
-    enemy_dict['0']=enemy_ship_0()
+    #aux=enemy_ship_0()
+    #enemy_dict['0']=enemy_ship_0()
 
 
 #chamadas DE SPAWN
@@ -847,6 +847,10 @@ class Ship:
 
         self.skin=shipdata[3]
 
+        #para colisao
+        self.origin='Player'
+        self.damage=self.energy_module.current_hp*1000
+
         self.weapon=[]
         for i in range(3):
             self.weapon.append(None)
@@ -936,7 +940,7 @@ class Ship:
                 self.shadow_images.append(pygame.image.load(aux).convert_alpha())
 
                 #for i in self.shadow_images:
-                   # i.set_alpha(50)
+                # i.set_alpha(50)
                 render.player_shadow=Object(self.shadow_images[2],400,400,0,0)
 
     def move(self,p):
@@ -1120,10 +1124,9 @@ class Ship:
 
 #ships inimigas
 
-
-def damage_taken_sprite_selector(origin):
+def damage_taken_sprite_selector(source):
     #machine gun
-    if origin=='Machine GunL' or origin=='Machine GunR':
+    if source.origin=='Machine GunL' or source.origin=='Machine GunR':
         a=random.randrange(2)
         if a==0:
             return 'blue_spark'
@@ -1131,12 +1134,16 @@ def damage_taken_sprite_selector(origin):
             return 'red_spark'
 
     #aa_missle
-    if origin=='Air/Air Missle':
+    elif source.origin=='Air/Air Missle':
         return 'small_explosion'
 
+    #player
+    elif source.origin=='Player':
+        return 'medium_explosion'
 
-class enemy_ship_0():
-    def __init__(self):
+
+class enemy_ship_0:
+    def __init__(self,pos_list=None):
         global data_db_cursor
         #read data
         data_db_cursor.execute('SELECT * FROM enemies WHERE ID=0')
@@ -1147,19 +1154,37 @@ class enemy_ship_0():
         self.speed=self.data[3]
         self.value=1000
 
+        #lista de pontos de posicionamento
+        self.pos_list=[(450,-200,500),(450,800,1000),(800,300,1000),(1280,1000)]
+
+        #lista de velocidades entre pontos
+        self.speed_list=get_speed_list(self.pos_list,self.speed)
+
+        #posicção inicial=0
+        self.pos_n=0
+        self.pos_max=3
+
+        self.vx=self.speed_list[self.pos_n][0]
+        self.vy=self.speed_list[self.pos_n][1]
+
+
+
         #definir weapon
         self.weapon=flak(self.data[4])
         self.offsetL=self.data[5]
         self.offsetR=self.data[6]
 
+        #controle da engine principal
         self.alive=True
         self.was_killed=False
+        self.spawn_distance=200
 
         #definir imagem
         aux='images/ship/enemies/0.png'
         self.image=pygame.image.load(aux).convert_alpha()
         self.rect=self.image.get_rect()
-        self.rect.center=(0,0)
+        self.rect.center=(self.pos_list[0][0],self.pos_list[0][1])
+        print(self.rect.center)
 
         aux='images/ship/0/jet_spray/spray40.png'
         self.jet=pygame.image.load(aux).convert_alpha()
@@ -1177,10 +1202,13 @@ class enemy_ship_0():
         self.jet_time=pygame.time.get_ticks()
         self.jet_style=True
 
-    def start(self,posx):
-        self.rect.centerx=posx
-        self.jets[0].rect.left=self.rect.centerx+22
-        self.jets[1].rect.right=self.rect.centerx-22
+        #definir sombra
+        if enable_shadows:
+            aux='images/ship/enemies/shadows/0.png'
+            self.shadow_image=pygame.image.load(aux).convert_alpha()
+            self.shadow_rect=self.shadow_image.get_rect()
+            self.shadow_rect.center=(-1000,-1000)
+
 
     def fire(self):
         if pygame.time.get_ticks()-self.weapon.clock>=self.cooldown:
@@ -1194,7 +1222,20 @@ class enemy_ship_0():
             play_sound('flak')
 
     def update_rect(self):
-        self.rect=self.rect.move(0,self.speed)
+        #move
+        if check_point(self.pos_list[self.pos_n+1],self.rect.center,5):
+            if self.pos_n<self.pos_max:
+                self.pos_n+=1
+                self.vx=self.speed_list[self.pos_n][0]
+                self.vy=self.speed_list[self.pos_n][1]
+                print(self.pos_n)
+                print(self.vx,self.vy)
+        #print(self.pos_n)
+        print(self.rect.center)
+        self.rect.left+=self.vx
+        self.rect.centery+=self.vy
+
+        #acerta os jatos
         for i in self.jets:
             i.rect=i.rect.move(0,self.speed)
         if pygame.time.get_ticks()-self.jet_time>=100:
@@ -1208,6 +1249,11 @@ class enemy_ship_0():
                     i.image=self.jet2
                     self.jet_style=True
 
+        #acerta as sombras
+        if enable_shadows:
+            self.shadow_rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
+            self.shadow_rect.centery=interpolate(self.rect.centery,40,760,-80,880)
+
         if self.rect.top>=sresV or self.alive==False:
             return True
 
@@ -1215,10 +1261,11 @@ class enemy_ship_0():
         for i in self.jets:
             screen.blit(i.image,i.rect)
         screen.blit(self.image,self.rect)
+        screen.blit(self.shadow_image,self.shadow_rect)
 
-    def take_damage(self,proj):
-        self.hp-=proj.damage
-        spawn_sprite(proj.rect.centerx,self.rect.centery,damage_taken_sprite_selector(proj.origin))
+    def take_damage(self,source):
+        self.hp-=source.damage
+        spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
         #se morreu...
         if self.hp<=0:
             self.alive=False
@@ -1228,7 +1275,53 @@ class enemy_ship_0():
             return True
 
 
-#auxiliaressssssss
-
+#funçoes auxiliares
 def interpolate(value,fromLow,fromHigh,toLow,toHigh):
+    #interpolação simples linear
     return ((toHigh-toLow)/(fromHigh-fromLow))*(value-fromLow)+toLow
+
+
+def chk_sign(v):
+    if v>0:
+        return 1
+    elif v<0:
+        return -1
+    else:
+        return 0
+
+
+def get_speed(start,end):
+    #start tem 3 elementos o 3o eh o tempo
+    x=end[0]-start[0]
+    y=end[1]-start[1]
+    if x!=0 and y!=0:
+        a=(x/start[2],y/start[2])
+    elif y==0 and x!=0:
+        a=(x/start[2],0)
+    elif x==0 and y!=0:
+        a=(0,y/start[2])
+    else:
+        a=(0,0)
+    if a[0]>=1 and a[1]>=1:
+        return a
+    else:
+        start=(start[0],start[1],start[2]-10)
+        return get_speed(start,end)
+    #return (chk_sign(x)*a[0],chk_sign(y)*a[1])
+
+
+def get_speed_list(list,v):
+    n=len(list)-1
+    speed_list=[]
+    for i in range(n):
+        start=(list[i][0],list[i][1],list[i][2])
+        end=(list[i+1][0],list[i+1][1])
+        speed_list.append(get_speed(start,end))
+    return speed_list
+
+
+def check_point(desired,current,tolerance):
+    #print(abs(desired[0]-current[0]))
+    #print(abs(desired[1]-current[1]))
+
+    return abs(desired[0]-current[0])<=tolerance and abs(desired[1]-current[1])<=tolerance

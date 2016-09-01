@@ -15,6 +15,7 @@ hp_UI=[]#$-barra lateral
 enemy_ships=[]#sao as naves inimgas e elas se blitam
 shadows=[]
 
+
 background=None
 player=None
 player_shadow=None

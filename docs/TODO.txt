@@ -4,8 +4,15 @@ reduzir tamanho das sparks?:???????
 CLAREAR AS SOMBRAS
 
 implementar:
- 2=lista de caminhos em um arquivo + interpretador+lista de naves+interpretador
- 1=sombras
+ 2=lista de caminhos em um arquivo da nave
+ 1= interpretador+lista de naves+interpretador
+ -> fazendo estes!!
+ -> falta: acertar as velocidades, lembre- menor unidade para andar 1pixel em x, em y 0.5
+ -> acertar ffuncao de achar velocidade, de tal forma que supra esses valores
+
+
+ 3=ajuste global de volume
+ 4=tela de loading
 
 mixxer durante missao
 ch0-bgm menu
@@ -17,6 +24,8 @@ ch5-mg(arma 2)
 ch6-explosao media
 
 
-para remover iccp
 
+
+
+para remover iccp
 pngcrush_1_8.5_w64.exe -ow -rem iCCP -sRGB "F:\raptor_reboot\sprites\small_explosion\13.png"
