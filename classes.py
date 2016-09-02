@@ -169,8 +169,6 @@ tupla:
 
 tempo em milisegundos entre posiçoes
 '''
-
-
 def spawn(ID,spawn_distance,pos_list):
     if ID==0:
         return enemy_ship_0(pos_list=pos_list,spawn_dist=spawn_distance)
@@ -199,22 +197,33 @@ def load_wave_list(id,list,loading_line=None):
             for j in range(1,n+1):
                 if j<n:
                     k=j*3
-                    p=(int(a[k]),int(a[k+1]),int(a[k+2]))
+                    aux=a[k]
+                    if aux=='r':
+                        aux=random.randrange(50,sresH-50)
+                    else:
+                        aux=int(aux)
+                    p=(aux,int(a[k+1]),int(a[k+2]))
                     points.append(p)
                 else:
                     k=j*3
-                    p=(int(a[k]),int(a[k+1]))
+                    aux=a[k]
+                    if aux=='r':
+                        aux=random.randrange(50,sresH-50)
+                    else:
+                        aux=int(aux)
+                    p=(aux,int(a[k+1]))
                     points.append(p)
 
             if loading_line!=None:
                 loading_line.update(ni/(b+2))
                 print(ni/(b+2))
 
-            print('\n')
+
+            '''print('\n')
             print('ni'+str(ni)+' pts,id,dist')
             print(points)
             print(id)
-            print(distance)
+            print(distance)'''
 
             list.append(spawn(id,distance,points))
     file.close()
