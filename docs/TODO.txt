@@ -21,3 +21,5 @@ ch6-explosao media
 
 para remover iccp
 pngcrush_1_8.5_w64.exe -ow -rem iCCP -rem sRGB "F:\raptor_reboot\sprites\small_explosion\13.png"
+
+Я хочу сиськи

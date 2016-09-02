@@ -90,6 +90,15 @@ def start_sprite_dict():
         aux=pyganim.PygAnimation(spritelist)
         sprites_dict[name]=sprite_data(aux,60,60)
 
+        #'yellow_spark'
+        name='yellow_spark'
+        spritelist=[]
+        for i in range(6):
+            aux='sprites/'+name+'/'+str(i)+'.png'
+            spritelist.append((aux,20))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict[name]=sprite_data(aux,60,60)
+
     #shield da nave
     spritelist=[]
     for i in range(7):
@@ -172,6 +181,8 @@ tempo em milisegundos entre posiçoes
 def spawn(ID,spawn_distance,pos_list):
     if ID==0:
         return enemy_ship_0(pos_list=pos_list,spawn_dist=spawn_distance)
+    elif ID==1:
+        return enemy_ship_1(pos_list=pos_list,spawn_dist=spawn_distance)
 
 
 #leitura do arquivo csv, tipo pode melhorar bastante ainda!
@@ -880,7 +891,7 @@ class Shield:
 
     def take_damage(self,dmg):
         #reduz a vida
-        self.current_hp-=dmg
+        self.current_hp-=int(dmg*self.multiplier)
         if self.current_hp<0:
             self.current_hp=0
 
@@ -1209,12 +1220,13 @@ class Ship:
 def damage_taken_sprite_selector(source):
     #machine gun
     if source.origin=='Machine GunL' or source.origin=='Machine GunR':
-        a=random.randrange(2)
-        if a==0:
+        a=random.randrange(4)
+        if a<=1:
+            return 'yellow_spark'
+        elif a==2:
             return 'blue_spark'
         else:
             return 'red_spark'
-
     #aa_missle
     elif source.origin=='Air/Air Missle':
         return 'small_explosion'
@@ -1226,13 +1238,8 @@ def damage_taken_sprite_selector(source):
 
 class enemy_ship_0:
     def __init__(self,*args,**kwargs): #tem q passar pos_list,e spawn_dist nos kwargs
-        global data_db_cursor
-        #read data
-        data_db_cursor.execute('SELECT * FROM enemies WHERE ID=0')
-        self.data=data_db_cursor.fetchall()[0]
-
-        self.hp=self.data[1]
-        self.cooldown=int((1/self.data[2])*1000)
+        self.hp=1000
+        self.cooldown=int((1/0.7)*1000)
         self.value=1000
 
         #lista de pontos de posicionamento
@@ -1251,9 +1258,9 @@ class enemy_ship_0:
         self.y=self.pos_list[0][1]
 
         #definir weapon
-        self.weapon=flak(self.data[4])
-        self.offsetL=self.data[5]
-        self.offsetR=self.data[6]
+        self.weapon=flak('Flak')
+        self.offsetL=33
+        self.offsetR=33
 
         #controle da engine principal
         self.alive=True
@@ -1298,6 +1305,137 @@ class enemy_ship_0:
                            self.weapon.projectile_speedV,'centered',damage=self.weapon.damage,friendly=False))
             render.projectiles.append(
                 Projectile(self.weapon.projectile_image,self.rect.centerx+self.offsetR,self.rect.centery,0,
+                           self.weapon.projectile_speedV,'centered',damage=self.weapon.damage,friendly=False))
+            play_sound('flak')
+
+    def update_rect(self):
+        #move
+        if check_point(self.pos_list[self.pos_n+1],self.rect.center,self.max_speed):
+            if self.pos_n<self.pos_max:
+                self.pos_n+=1
+                self.vx=self.speed_list[self.pos_n][0]
+                self.vy=self.speed_list[self.pos_n][1]
+
+        self.x+=self.vx
+        self.y+=self.vy
+        self.rect.center=(self.x,self.y)
+
+        #acerta os jatos
+        self.jets[0].rect.centerx=self.rect.centerx-32
+        self.jets[1].rect.centerx=self.rect.centerx+32
+        self.jets[0].rect.centery=self.rect.centery-40
+        self.jets[1].rect.centery=self.rect.centery-40
+
+        if pygame.time.get_ticks()-self.jet_time>=100:
+            self.jet_time=pygame.time.get_ticks()
+            if self.jet_style:
+                for i in self.jets:
+                    i.image=self.jet
+                    self.jet_style=False
+            else:
+                for i in self.jets:
+                    i.image=self.jet2
+                    self.jet_style=True
+
+        #acerta as sombras
+        if enable_shadows:
+            self.shadow_rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
+            self.shadow_rect.centery=interpolate(self.rect.centery,40,760,-80,880)
+
+        if self.rect.top>=sresV or self.alive==False:
+            return True
+
+    def blit(self,screen):
+        for i in self.jets:
+            screen.blit(i.image,i.rect)
+        screen.blit(self.image,self.rect)
+
+    def blit_shadow(self,screen):
+        screen.blit(self.shadow_image,self.shadow_rect)
+
+    def take_damage(self,source):
+        self.hp-=source.damage
+
+        #se morreu...
+        if self.hp<=0:#faz toda a ceniunha
+            self.alive=False
+            self.was_killed=True
+            spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')#--tem q ser a medium
+            play_sound('medium_explosion')
+            return True
+        else:#so toma dano
+            spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
+
+
+class enemy_ship_1:
+    def __init__(self,*args,**kwargs): #tem q passar pos_list,e spawn_dist nos kwargs
+        self.hp=500
+        self.cooldown=int((1/1)*1000)
+        self.value=500
+
+        #lista de pontos de posicionamento
+        if 1:
+            self.pos_list=kwargs.get('pos_list')
+
+            #lista de velocidades entre pontos
+            self.speed_list,self.max_speed=get_speed_list(self.pos_list)
+
+            #posicção inicial=0
+            self.pos_n=0
+            self.pos_max=len(self.pos_list)-2
+
+            self.vx=self.speed_list[self.pos_n][0]
+            self.vy=self.speed_list[self.pos_n][1]
+            self.x=self.pos_list[0][0]
+            self.y=self.pos_list[0][1]
+
+        #definir weapon
+        self.weapon=flak('Flak')
+        self.offsetH=+20
+
+
+        #controle da engine principal
+        self.alive=True
+        self.was_killed=False
+        self.spawn_distance=kwargs.get('spawn_dist')
+
+        #definir imagem
+        aux='images/ship/enemies/1.png'
+        self.image=pygame.image.load(aux).convert_alpha()
+        self.image=pygame.transform.smoothscale(self.image,(100,77))
+        self.rect=self.image.get_rect()
+        self.rect.center=(self.x,self.y)
+
+        aux='images/ship/0/jet_spray/spray40.png'
+        self.jet=pygame.image.load(aux).convert_alpha()
+        self.jet=pygame.transform.flip(self.jet,False,True)
+        self.jet2=pygame.transform.smoothscale(self.jet,(20,33))
+        self.jet=pygame.transform.smoothscale(self.jet,(20,40))
+        self.jets=[]
+        self.jets.append(Object(self.jet,0,0,0,0))
+        self.jets.append(Object(self.jet,0,0,0,0))
+        self.jets[0].rect.centerx=self.rect.centerx+10
+        self.jets[1].rect.centerx=self.rect.centerx+10
+        for i in self.jets:
+            i.rect.bottom=self.rect.centery-30#---> quanto o jato ta para tras do centro
+
+        self.jet_time=pygame.time.get_ticks()
+        self.jet_style=True
+
+        #definir sombra
+        if enable_shadows:
+            aux='images/ship/enemies/shadows/1.png'
+            self.shadow_image=pygame.image.load(aux).convert_alpha()
+            self.shadow_image=pygame.transform.smoothscale(self.shadow_image,(100,77))
+            self.shadow_rect=self.shadow_image.get_rect()
+            self.shadow_rect.center=(-1000,-1000)
+        self.time=0
+
+    def fire(self):
+        if pygame.time.get_ticks()-self.weapon.clock>=self.cooldown:
+            self.weapon.clock=pygame.time.get_ticks()
+            render.projectiles.append(
+                Projectile(self.weapon.projectile_image,self.rect.centerx,self.rect.centery+self.offsetH,0,
                            self.weapon.projectile_speedV,'centered',damage=self.weapon.damage,friendly=False))
             play_sound('flak')
 

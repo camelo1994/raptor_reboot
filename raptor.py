@@ -40,12 +40,10 @@ sound_engine.mixer=sound_engine.Mixer(22050,8,32)
 sresH=1280
 sresV=800
 fps=75
-BGMVOL=0.1
-SFXVOL=0.1
+BGMVOL=0.5
+SFXVOL=0.5
 enable_shadows=True
 
-
-#CONSTANTS
 
 #CONTROL
 debug=True
@@ -170,6 +168,19 @@ while 1:
             #print('loading file: ' + file)
             aux=pygame.image.load(file).convert_alpha()
             render.objects.append(classes.Object(aux,0,0,0,0))
+
+
+            file='images/ship/enemies/1.png'#fundo
+            #print('loading file: ' + file)
+            aux=pygame.image.load(file).convert_alpha()
+            aux=pygame.transform.scale(aux,(100,77))
+            render.objects.append(classes.Object(aux,0,100,0,0))
+
+            file='images/ship/enemies/shadows/1.png'#fundo
+            #print('loading file: ' + file)
+            aux=pygame.image.load(file).convert_alpha()
+            aux=pygame.transform.scale(aux,(100,77))
+            render.objects.append(classes.Object(aux,0,300,0,0))
 
             file='images/menu/menu.png'#fundo
             #print('loading file: ' + file)
@@ -386,7 +397,6 @@ while 1:
 
     #rotinas cíclicas    
     else:
-
         while menu.status=='main':
             for event in pygame.event.get():
                 if event.type==QUIT:
@@ -655,3 +665,7 @@ while 1:
                                             +'  MainFPS:'+str(main_engine_fps_show)\
                                             +'  RenderFPS:'+str(renderer.fps_show)\
                                             +'  fTime: '+str(renderer.frametime)+'ms',colors.WHITE)
+
+
+
+
