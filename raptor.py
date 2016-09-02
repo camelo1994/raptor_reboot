@@ -40,9 +40,8 @@ sound_engine.mixer=sound_engine.Mixer(22050,8,32)
 sresH=1280
 sresV=800
 fps=75
-BGMVOL=0.2
-SFXVOL=0.2
-
+BGMVOL=0.1
+SFXVOL=0.1
 enable_shadows=True
 
 
