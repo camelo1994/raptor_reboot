@@ -5,8 +5,6 @@ reduzir tamanho das sparks?:???????
 
 implementar:
 
- 3=ajuste global de volume
- 4=tela de loading
 
 mixxer durante missao
 ch0-bgm menu

@@ -9,18 +9,20 @@ data_db=None
 data_db_cursor=None
 items_db=None
 items_db_cursor=None
-enable_shadows=None
 sprites_dict={}
 audio_dict={}
 enemy_dict={}
 
-sresH=1280
-sresV=800
+SFXVOL=None
+BGMVOL=None
+enable_shadows=None
+sresH=None
+sresV=None
 
 
 #inicializacoes
-def init(a,b,c):
-    global data_db,items_db,data_db_cursor,items_db_cursor,enable_shadows
+def init(a,b):
+    global data_db,items_db,data_db_cursor,items_db_cursor
     #connect to Database
     print('SQL: Connecting to SQL database: '+a)
     data_db=sqlite3.connect(a)
@@ -31,7 +33,6 @@ def init(a,b,c):
     start_sprite_dict()
     start_audio_dict()
     start_enemy_dict()
-    enable_shadows=c
 
 
 class sprite_data:
@@ -98,30 +99,29 @@ def start_sprite_dict():
 
 
 def start_audio_dict():
-    global audio_dict
-
+    global audio_dict,SFXVOL,BGMVOL
     #inicia um dicionario global de soms
-    print('Initializing audio dictionary')
+    print('Initializing audio dictionary (SFX:'+str(SFXVOL)+' BGM:'+str(BGMVOL)+')')
 
     #barulho da arma flak - 'flak'
     name='flak'
     aux='sounds/weapons/flak.ogg'
     aux=pygame.mixer.Sound(aux)
-    aux.set_volume(0.3)
+    aux.set_volume(SFXVOL*0.5)
     audio_dict[name]=aux
 
     #barulho da explosao media - 'medium_explosion'
     name='medium_explosion'
     aux='sounds/medium_explosion.ogg'
     aux=pygame.mixer.Sound(aux)
-    aux.set_volume(1)
+    aux.set_volume(SFXVOL)
     audio_dict[name]=aux
 
     #barulho do casco da nave
     name='ship_hull'
     aux='sounds/ship/hull.ogg'
     aux=pygame.mixer.Sound(aux)
-    aux.set_volume(1)
+    aux.set_volume(SFXVOL)
     audio_dict[name]=aux
 
 
@@ -131,6 +131,7 @@ def start_enemy_dict():
     #enemy #0
     #aux=enemy_ship_0()
     #enemy_dict['0']=enemy_ship_0()
+
 
 #chamadas DE SPAWN
 def spawn_sprite(x,y,key,dx=0,dy=0):
@@ -168,21 +169,25 @@ tupla:
 
 tempo em milisegundos entre posiçoes
 '''
+
+
 def spawn(ID,spawn_distance,pos_list):
     if ID==0:
         return enemy_ship_0(pos_list=pos_list,spawn_dist=spawn_distance)
 
+
 #leitura do arquivo csv, tipo pode melhorar bastante ainda!
-def load_wave_list(id,list):
+def load_wave_list(id,list,loading_line=None):
     aux='waves/'+id+'.csv'
     file=open(aux,'+r')
     data=csv.reader(file,delimiter=',')
-    ni=0
+    ni=0#numero da linha
 
     for i in data:
         if ni<2:
             if ni==1:
-                b=int(i[0])
+                b=int(i[0])#numero de naves
+                c=int(i[1])
             ni+=1
         else:
             ni+=1
@@ -201,6 +206,10 @@ def load_wave_list(id,list):
                     p=(int(a[k]),int(a[k+1]))
                     points.append(p)
 
+            if loading_line!=None:
+                loading_line.update(ni/(b+2))
+                print(ni/(b+2))
+
             print('\n')
             print('ni'+str(ni)+' pts,id,dist')
             print(points)
@@ -209,7 +218,7 @@ def load_wave_list(id,list):
 
             list.append(spawn(id,distance,points))
     file.close()
-    return b
+    return b,c
 
 
 #CLASSES GERAIS
@@ -265,6 +274,21 @@ class line:#(start,end,color,width)
         else:
             self.start=(self.start[0]+a,self.start[1])
             self.end=(self.end[0]+a,self.end[1])
+
+
+class loading_line(line):
+    def __init__(self,start,end,color,width,current=0):
+        line.__init__(self,start,end,color,width)
+        self.max=max
+        self.current=current
+        self.max_size=self.end[0]-self.start[0]
+        self.start_point=self.start[0]
+        self.update(self.current)
+
+    def update(self,current):
+        self.current=current
+        a=self.max_size*self.current
+        self.end=(self.start_point+a+10,self.end[1])
 
 
 class Player:
@@ -369,6 +393,8 @@ class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
         #music
         self.bgm=pygame.mixer.Sound(bgm_file)
         self.bgm2=pygame.mixer.Sound(bgm_file2)
+        self.bgm.set_volume(BGMVOL)
+        self.bgm2.set_volume(BGMVOL)
         sound_engine.mixer.channel[0].play(self.bgm,fade_ms=500)
 
         self.print('Successfuly loaded!')
@@ -431,6 +457,8 @@ class menu:#(settings_file,profiles_file,crosshair_file,bgm_file):
     def start_sounds(self,bsound,selsound):
         self.button_sound=pygame.mixer.Sound(bsound)
         self.select_sound=pygame.mixer.Sound(selsound)
+        self.button_sound.set_volume(SFXVOL)
+        self.select_sound.set_volume(SFXVOL)
 
     def bgm_toogle(self,bool=None):
         if bool==None:
@@ -727,7 +755,7 @@ class AA_missle(Weapon):
         #audio
         aux='sounds/weapons/aa_missle.ogg'
         self.fire_sound=pygame.mixer.Sound(aux)
-        self.fire_sound.set_volume(0.2)
+        self.fire_sound.set_volume(SFXVOL*0.5)
 
         self.missle_spritelist=[]
         for i in range(4):
@@ -768,7 +796,7 @@ class Machine_gun(Weapon):
         # audio
         aux='sounds/weapons/mg.ogg'
         self.fire_sound=pygame.mixer.Sound(aux)
-        self.fire_sound.set_volume(0.5)
+        self.fire_sound.set_volume(SFXVOL*0.6)
 
     def fire(self,pos):
         # verifica se pode atirar
@@ -820,10 +848,6 @@ class flak:
         self.projectile_image=pygame.image.load(aux).convert_alpha()
         self.projectile_speedV=self.data[2]
         self.cooldown=int((1/self.data[1])*1000)
-
-        aux='sounds/weapons/'+str(self.data[3])+'.ogg'
-        self.fire_sound=pygame.mixer.Sound(aux)
-        self.fire_sound.set_volume(0.4)
 
 
 #items
@@ -969,7 +993,7 @@ class Ship:
         if 1:
             aux='sounds/ship/shield.ogg'
             self.shield_sound=pygame.mixer.Sound(aux)
-            self.shield_sound.set_volume(1)
+            self.shield_sound.set_volume(SFXVOL)
 
         #sombras
         if 1:
@@ -1054,25 +1078,25 @@ class Ship:
 
             if y>0:
                 n=0
-                sound_engine.mixer.channel[3].set_volume(0.3)
+                sound_engine.mixer.channel[3].set_volume(SFXVOL*0.3)
             elif y==0:
                 n=1
-                sound_engine.mixer.channel[3].set_volume(0.5)
+                sound_engine.mixer.channel[3].set_volume(0.5*SFXVOL)
             elif y==-1:
                 n=3
-                sound_engine.mixer.channel[3].set_volume(0.6)
+                sound_engine.mixer.channel[3].set_volume(0.6*SFXVOL)
             elif y==-2:
                 n=5
-                sound_engine.mixer.channel[3].set_volume(0.7)
+                sound_engine.mixer.channel[3].set_volume(0.7*SFXVOL)
             elif y==-3:
                 n=7
-                sound_engine.mixer.channel[3].set_volume(0.8)
+                sound_engine.mixer.channel[3].set_volume(0.8*SFXVOL)
             elif y==-4:
                 n=9
-                sound_engine.mixer.channel[3].set_volume(0.9)
+                sound_engine.mixer.channel[3].set_volume(0.9*SFXVOL)
             else:
                 n=11
-                sound_engine.mixer.channel[3].set_volume(1)
+                sound_engine.mixer.channel[3].set_volume(1*SFXVOL)
 
             #define um index n, do grau de jato, 11 mais forte, 0 fraco
             #se esta em um mivel novo,é automaticamente alterado, se nao randomiza
@@ -1172,7 +1196,7 @@ class Ship:
 
 
 #ships inimigas
-
+#seletor de sprites dependendo do dano
 def damage_taken_sprite_selector(source):
     #machine gun
     if source.origin=='Machine GunL' or source.origin=='Machine GunR':
@@ -1275,8 +1299,6 @@ class enemy_ship_0:
                 self.pos_n+=1
                 self.vx=self.speed_list[self.pos_n][0]
                 self.vy=self.speed_list[self.pos_n][1]
-                print(pygame.time.get_ticks()-self.time)
-                self.time=pygame.time.get_ticks()
 
         self.x+=self.vx
         self.y+=self.vy
@@ -1285,8 +1307,8 @@ class enemy_ship_0:
         #acerta os jatos
         self.jets[0].rect.centerx=self.rect.centerx-32
         self.jets[1].rect.centerx=self.rect.centerx+32
-        self.jets[0].rect.centery=self.rect.centery-35
-        self.jets[1].rect.centery=self.rect.centery-35
+        self.jets[0].rect.centery=self.rect.centery-40
+        self.jets[1].rect.centery=self.rect.centery-40
 
         if pygame.time.get_ticks()-self.jet_time>=100:
             self.jet_time=pygame.time.get_ticks()
@@ -1317,14 +1339,16 @@ class enemy_ship_0:
 
     def take_damage(self,source):
         self.hp-=source.damage
-        spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
+
         #se morreu...
-        if self.hp<=0:
+        if self.hp<=0:#faz toda a ceniunha
             self.alive=False
             self.was_killed=True
             spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')#--tem q ser a medium
             play_sound('medium_explosion')
             return True
+        else:#so toma dano
+            spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
 
 
 #funçoes auxiliares

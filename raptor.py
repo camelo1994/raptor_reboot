@@ -14,6 +14,7 @@ import sound_engine,classes
 from def_lib import *
 from render import *
 from sound_engine import *
+from classes import *
 
 colorama.init()
 print('\n\n\n\n\nImporting pygame library...')
@@ -39,6 +40,9 @@ sound_engine.mixer=sound_engine.Mixer(22050,8,32)
 sresH=1280
 sresV=800
 fps=75
+BGMVOL=0.2
+SFXVOL=0.2
+
 enable_shadows=True
 
 
@@ -77,7 +81,12 @@ if 1:
     #loading everything from the user and starting the menu
     data_db_file='sql/data.db'
     items_db_file='sql/items.db'
-    classes.init(data_db_file,items_db_file,enable_shadows)
+    classes.BGMVOL=BGMVOL
+    classes.SFXVOL=SFXVOL
+    classes.enable_shadows=enable_shadows
+    classes.sresH=sresH
+    classes.sresV=sresV
+    classes.init(data_db_file,items_db_file)
 
     bgm_file='bgm/raptor11.ogg'
     bgm_file2='bgm/raptor09.ogg'
@@ -215,11 +224,6 @@ while 1:
             file='images/menu/menu.png'#fundo
             #print('loading file: ' + file)
             aux=pygame.image.load(file).convert_alpha()
-            render.objects.append(classes.Object(aux,0,0,0,0))
-
-            file='images/menu/menu.png'#fundo
-            #print('loading file: ' + file)
-            aux=pygame.image.load(file).convert_alpha()
             render.objects.append(classes.Object(aux,700,100,0,0))
 
             file='images/menu/menu_profile_square.png'#molduras
@@ -326,15 +330,18 @@ while 1:
             #esconde o cursor
             renderer.show_cursor=False
 
+            #faz a linha de loading
+            render.lines.append(classes.loading_line((50,sresV-10),(sresH-50,sresV-10),colors.RED1,2))
+
             wave='a0'
             print('Loading enemy ships list - may take some time (wave '+str(wave)+')')
 
-            total_ships=classes.load_wave_list(wave,enemy_ships)
+            total_ships,overtime=classes.load_wave_list(wave,enemy_ships,render.lines[0])
             next_ship_spawn=enemy_ships[0]
             next_ship=0
             wave_over=False
-            overtime=1000
             last_ship_killed_time=-1
+            renderer.clear_control()
 
 
             #inits basicos
@@ -342,12 +349,12 @@ while 1:
                 #define canal 2 - bgm
                 wave_bgm_file='bgm/raptor02.ogg'
                 wave_sound=pygame.mixer.Sound(wave_bgm_file)
-                wave_sound.set_volume(0)
+                wave_sound.set_volume(0.5*BGMVOL)
                 sound_engine.mixer.channel[2].play(wave_sound,loops=-1)
                 #define canal 3 - barulho do vento
                 jet_sound_file='sounds/jet_interior.ogg'
                 jet_sound=pygame.mixer.Sound(jet_sound_file)
-                jet_sound.set_volume(0.5)
+                jet_sound.set_volume(0.5*SFXVOL)
                 sound_engine.mixer.channel[3].play(jet_sound,loops=-1)
 
                 desired_pos=[]
