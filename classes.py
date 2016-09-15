@@ -963,12 +963,6 @@ class Ship:
         self.weapon[0]=copy(items_dict.get(shipdata[4]))
         self.weapon[1]=copy(items_dict.get(shipdata[5]))
 
-
-        #if shipdata[4]=='Air/Air Missle':
-          #  self.weapon[0]=AA_missle(shipdata[4])
-       # if shipdata[5]=='Machine Gun':
-         #   self.weapon[1]=Machine_gun(shipdata[5])
-
         #control
         self.movetime=pygame.time.get_ticks()
         self.jettime=pygame.time.get_ticks()
