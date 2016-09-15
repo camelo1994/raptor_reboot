@@ -50,50 +50,42 @@ def start_sprite_dict():
     print('Initializing sprites dictionary -  may take some time!')
 
     ''' ---TEMPLATE---
-    spritelist=[]
-    for i in range(14) <------n de imagens +1
-        aux='sprites/small_explosion/'+str(i)+'.png'
-        spritelist.append((aux,100))<-------- tempo quie cada um vai ficar na tela
-        aux=pyganim.PygAnimation(spritelist)
-        sprites_dict['small_explosion']=sprite_data(aux,64,64)<-----altura e largura
+    #hit do tiro de laser
+    if 1:
+        name='laser_turret_hit'<- nome da pasta
+        w=80 <-largura
+        h=80<- alktura
+        t=50<- tempo de cada frame na tela
+        n=4<- numero de frames
+        spritelist=[]
+        for i in range(n):
+            aux='sprites/'+name+'/'+str(i)+'.png'
+            spritelist.append((aux,t))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict[name]=sprite_data(aux,w,h)
     '''
 
     #'small_explosion'
-    spritelist=[]
-    for i in range(14):
-        aux='sprites/small_explosion/'+str(i)+'.png'
-        spritelist.append((aux,50))
-        aux=pyganim.PygAnimation(spritelist)
-        sprites_dict['small_explosion']=sprite_data(aux,64,64)
+    if 1:
+        spritelist=[]
+        for i in range(14):
+            aux='sprites/small_explosion/'+str(i)+'.png'
+            spritelist.append((aux,50))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict['small_explosion']=sprite_data(aux,64,64)
 
     #'medium_explosion'
-    spritelist=[]
-    for i in range(14):
-        aux='sprites/medium_explosion/'+str(i)+'.png'
-        spritelist.append((aux,50))
-        aux=pyganim.PygAnimation(spritelist)
-        sprites_dict['medium_explosion']=sprite_data(aux,160,160)
+    if 1:
+        spritelist=[]
+        for i in range(14):
+            aux='sprites/medium_explosion/'+str(i)+'.png'
+            spritelist.append((aux,50))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict['medium_explosion']=sprite_data(aux,160,160)
 
     #'blue spark'
-    name='blue_spark'
-    spritelist=[]
-    for i in range(6):
-        aux='sprites/'+name+'/'+str(i)+'.png'
-        spritelist.append((aux,20))
-        aux=pyganim.PygAnimation(spritelist)
-        sprites_dict[name]=sprite_data(aux,60,60)
-
-    #'red_spark'
-    name='red_spark'
-    spritelist=[]
-    for i in range(6):
-        aux='sprites/'+name+'/'+str(i)+'.png'
-        spritelist.append((aux,20))
-        aux=pyganim.PygAnimation(spritelist)
-        sprites_dict[name]=sprite_data(aux,60,60)
-
-        #'yellow_spark'
-        name='yellow_spark'
+    if 1:
+        name='blue_spark'
         spritelist=[]
         for i in range(6):
             aux='sprites/'+name+'/'+str(i)+'.png'
@@ -101,12 +93,46 @@ def start_sprite_dict():
             aux=pyganim.PygAnimation(spritelist)
             sprites_dict[name]=sprite_data(aux,60,60)
 
+    #'red_spark'
+    if 1:
+        name='red_spark'
+        spritelist=[]
+        for i in range(6):
+            aux='sprites/'+name+'/'+str(i)+'.png'
+            spritelist.append((aux,20))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict[name]=sprite_data(aux,60,60)
+
+            #'yellow_spark'
+            name='yellow_spark'
+            spritelist=[]
+            for i in range(6):
+                aux='sprites/'+name+'/'+str(i)+'.png'
+                spritelist.append((aux,20))
+                aux=pyganim.PygAnimation(spritelist)
+                sprites_dict[name]=sprite_data(aux,60,60)
+
     #shield da nave
-    spritelist=[]
-    for i in range(7):
-        aux='images/ship/shield/'+str(i)+'.png'
-        spritelist.append((aux,50))
-        sprites_dict['ship_shield']=pyganim.PygAnimation(spritelist)
+    if 1:
+        spritelist=[]
+        for i in range(7):
+            aux='images/ship/shield/'+str(i)+'.png'
+            spritelist.append((aux,50))
+            sprites_dict['ship_shield']=pyganim.PygAnimation(spritelist)
+
+    #hit do tiro de laser
+    if 1:
+        name='laser_turret_hit'
+        w=80
+        h=80
+        t=20
+        n=4
+        spritelist=[]
+        for i in range(n):
+            aux='sprites/'+name+'/'+str(i)+'.png'
+            spritelist.append((aux,t))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict[name]=sprite_data(aux,w,h)
 
 
 def start_audio_dict():
@@ -114,26 +140,58 @@ def start_audio_dict():
     #inicia um dicionario global de soms
     print('Initializing audio dictionary (SFX:'+str(SFXVOL)+' BGM:'+str(BGMVOL)+')')
 
+
+    ''' ---TEMPLATE---
+    #barulho do prefire laser turret
+    if 1:
+        name='laser_turret_prefire'<- nome do arquivo
+        vol=0.6<- volume de compensação
+        aux='sounds/weapons/'+name+'.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*vol)
+        audio_dict[name]=aux'''
+
     #barulho da arma flak - 'flak'
-    name='flak'
-    aux='sounds/weapons/flak.ogg'
-    aux=pygame.mixer.Sound(aux)
-    aux.set_volume(SFXVOL*0.5)
-    audio_dict[name]=aux
+    if 1:
+        name='flak'
+        aux='sounds/weapons/flak.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*0.5)
+        audio_dict[name]=aux
 
     #barulho da explosao media - 'medium_explosion'
-    name='medium_explosion'
-    aux='sounds/medium_explosion.ogg'
-    aux=pygame.mixer.Sound(aux)
-    aux.set_volume(SFXVOL)
-    audio_dict[name]=aux
+    if 1:
+        name='medium_explosion'
+        aux='sounds/medium_explosion.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL)
+        audio_dict[name]=aux
 
     #barulho do casco da nave
-    name='ship_hull'
-    aux='sounds/ship/hull.ogg'
-    aux=pygame.mixer.Sound(aux)
-    aux.set_volume(SFXVOL)
-    audio_dict[name]=aux
+    if 1:
+        name='ship_hull'
+        aux='sounds/ship/hull.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL)
+        audio_dict[name]=aux
+
+    #barulho do prefire laser turret
+    if 1:
+        name='laser_turret_prefire'
+        vol=0.3
+        aux='sounds/weapons/'+name+'.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*vol)
+        audio_dict[name]=aux
+
+    #barulho da laser turret
+    if 1:
+        name='laser_turret_fire'
+        vol=0.3
+        aux='sounds/weapons/'+name+'.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*vol)
+        audio_dict[name]=aux
 
 
 def start_enemy_dict():
@@ -169,8 +227,13 @@ def start_items_dict():
     aux=AA_missle(name)
     items_dict[name]=aux
 
+    #Laser Turret
+    name='Laser Turret'
+    aux=Laser_turret(name)
+    items_dict[name]=aux
 
-#chamadas DE SPAWN
+
+#chamadas DE SPAWN - x,y é o centro da animação!!!
 def spawn_sprite(x,y,key,dx=0,dy=0):
     global sprites_dict
     if key in sprites_dict:
@@ -760,6 +823,7 @@ class Weapon:
     def __init__(self,name):
         global items_db_cursor
         #read data
+
         items_db_cursor.execute('SELECT * FROM weapons WHERE name="'+name+'"')
         self.data=items_db_cursor.fetchall()[0]
         self.name=name
@@ -789,7 +853,7 @@ class AA_missle(Weapon):
         self.projectile_image=pygame.transform.scale(self.projectile_image,(8,20))
         self.projectile_speedV=-12
         self.cooldown=self.data[3]
-
+        self.stringName='AIM-31 "Mauler" Air/Air Missile'
         #audio
         aux='sounds/weapons/aa_missle.ogg'
         self.fire_sound=pygame.mixer.Sound(aux)
@@ -830,6 +894,7 @@ class Machine_gun(Weapon):
         self.proj_style_left=False
         self.proj_style_right=True
         self.cooldown=self.data[3]
+        self.stringName='MG21C Twin Reaver Machine Guns'
 
         # audio
         aux='sounds/weapons/mg.ogg'
@@ -864,6 +929,19 @@ class Machine_gun(Weapon):
             sound_engine.mixer.channel[5].play(self.fire_sound)
 
 
+class Laser_turret(Weapon):
+    def define_projectile(self):
+        self.cooldown=self.data[3]
+        self.has_target=False
+
+    def fire(self,pos):
+        if pygame.time.get_ticks()-self.clock>=self.cooldown:
+            self.clock=pygame.time.get_ticks()
+            if self.has_target:
+                play_sound('laser_turret_fire')
+            else:
+                play_sound('laser_turret_prefire')
+
 #weapons dos inimigos
 class flak:
     def __init__(self,name):
@@ -895,7 +973,7 @@ class Shield:
         #read data
         items_db_cursor.execute('SELECT * FROM items WHERE name="'+name+'"')
         self.data=items_db_cursor.fetchall()[0]
-        print(self.data)
+        self.stringName=name
 
         self.name=name
         self.hp=self.data[2]
@@ -923,9 +1001,11 @@ class Energy_module:
         print(self.data)
 
         self.name=name
+        self.stringName=name
         self.hp=self.data[2]
         self.current_hp=int(self.hp*perc)
         self.multiplier=self.data[3]
+
 
         #pygame stuff
         file='images/items/'+str(self.data[1])+'.png'
@@ -1508,7 +1588,7 @@ class enemy_ship_1:
             spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
 
 
-#funçoes auxiliares
+#FUNÇOES AUXILIARES
 def interpolate(value,fromLow,fromHigh,toLow,toHigh):
     #interpolação simples linear
     return ((toHigh-toLow)/(fromHigh-fromLow))*(value-fromLow)+toLow

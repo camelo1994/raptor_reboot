@@ -46,7 +46,7 @@ pygame.init()
 pygame.font.init()
 pygame.display.init()
 pygame.mixer.init()
-sound_engine.mixer=sound_engine.Mixer(22050,8,32)
+sound_engine.mixer=sound_engine.Mixer(22050,16,32)
 
 #CONFIGURAÇOES
 sresH=1280
@@ -230,6 +230,8 @@ while 1:
             #linhas
             render.lines.append(classes.line((600,450),(600,700),colors.RED,3))
 
+
+
             menu.update(renderer)
         if menu.next_status=='profile':
             print('Generating profiles menu...')
@@ -294,6 +296,8 @@ while 1:
             #linhas
             render.lines.append(classes.line((600,450),(600,700),colors.RED,3))
             menu.update_menu_profile_data()
+
+
             menu.update(renderer)
         if menu.next_status=='hangar':
             print('Generating hangar menu...')
