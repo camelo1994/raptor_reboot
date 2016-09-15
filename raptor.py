@@ -8,6 +8,11 @@ Created on 25/06/2016
      Many times you will encounter if 1: statements these were used to fold the test
 
 '''
+
+
+
+
+
 import os,sys,random,time,threading,sqlite3,colorama
 import sound_engine,classes
 
@@ -15,11 +20,20 @@ from def_lib import *
 from render import *
 from sound_engine import *
 from classes import *
+from colorama import Fore,Back,Style
 
 colorama.init()
-print('\n\n\n\n\nImporting pygame library...')
+if 1:#boot no console
+    print('\n\n\n\n\n\n')
+    print(Back.RED+Fore.WHITE+Style.BRIGHT+'RAPTOR: Call of the Birl'+Style.RESET_ALL+Back.RESET)
+    print(Fore.BLACK+Back.LIGHTWHITE_EX+'Created by myself')
+    print('2016 @ No Copyrights at all'+Fore.RESET+Back.RESET)
+
+print('\nImporting pygame library...')
 import pygame
 from pygame.locals import *
+
+
 
 print('Importing pyganim library...')
 import pyganim
@@ -27,10 +41,8 @@ import pyganim
 #deve-se pre incializar esta merda! pq se nao fica com lag de entrada
 pygame.mixer.pre_init(22050,8,2,32)
 
-
 print('Initializing pygame')
 pygame.init()
-print('\t pygame.font')
 pygame.font.init()
 pygame.display.init()
 pygame.mixer.init()
@@ -102,7 +114,8 @@ if 1:
     #   print('lindao!!!!!!')
 
 #loop principal
-print('\n\nStarting main loop:')
+if debug:
+    print('\n\nStarting main loop:')
 menu.swap('main')
 while 1:
     #rotinas independentes de troca de menu(executam uma só vez)
@@ -168,13 +181,6 @@ while 1:
             #print('loading file: ' + file)
             aux=pygame.image.load(file).convert_alpha()
             render.objects.append(classes.Object(aux,0,0,0,0))
-
-
-            file='images/ship/enemies/1.png'#fundo
-            #print('loading file: ' + file)
-            aux=pygame.image.load(file).convert_alpha()
-            aux=pygame.transform.scale(aux,(100,77))
-            render.objects.append(classes.Object(aux,0,100,0,0))
 
             file='images/ship/enemies/shadows/1.png'#fundo
             #print('loading file: ' + file)

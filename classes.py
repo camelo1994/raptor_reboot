@@ -12,6 +12,7 @@ items_db_cursor=None
 sprites_dict={}
 audio_dict={}
 enemy_dict={}
+items_dict={}
 
 SFXVOL=None
 BGMVOL=None
@@ -33,6 +34,7 @@ def init(a,b):
     start_sprite_dict()
     start_audio_dict()
     start_enemy_dict()
+    start_items_dict()
 
 
 class sprite_data:
@@ -142,6 +144,32 @@ def start_enemy_dict():
     #enemy_dict['0']=enemy_ship_0()
 
 
+def start_items_dict():
+    print('Initializing items dictionary')
+
+    #ITEMS
+    # ENERGY MODULE
+    name='Energy Module'
+    aux=Energy_module(name,1)
+    items_dict[name]=aux
+
+    # PHASE SHIELD
+    name='Phase Shield'
+    aux=Shield(name,1)
+    items_dict[name]=aux
+
+    #WEAPONS
+    # MACHINE GUN
+    name='Machine Gun'
+    aux=Machine_gun(name)
+    items_dict[name]=aux
+
+    #AIR AIR MISSLE
+    name='Air/Air Missle'
+    aux=AA_missle(name)
+    items_dict[name]=aux
+
+
 #chamadas DE SPAWN
 def spawn_sprite(x,y,key,dx=0,dy=0):
     global sprites_dict
@@ -167,17 +195,6 @@ def play_sound(key):
         print('There is no audio: '+key)
 
 
-'''
-Para spawnar ships inimigas, deve-se informar
-
-ID da nave
-distancia em Y para spawn
-lista de posicoes no seguinte padrao:
-tupla:
-[(x1,y1,t1-2),(x2,y2,t2-3),(xn-1,yn-1,t(n-1)-n),(xn,yn)]
-
-tempo em milisegundos entre posiçoes
-'''
 def spawn(ID,spawn_distance,pos_list):
     if ID==0:
         return enemy_ship_0(pos_list=pos_list,spawn_dist=spawn_distance)
@@ -227,7 +244,7 @@ def load_wave_list(id,list,loading_line=None):
 
             if loading_line!=None:
                 loading_line.update(ni/(b+2))
-                print(ni/(b+2))
+                #print(ni/(b+2))
 
 
             '''print('\n')
@@ -747,6 +764,7 @@ class Weapon:
         self.data=items_db_cursor.fetchall()[0]
         self.name=name
         self.damage=self.data[2]
+        self.cost=self.data[4]
 
         #pygame stuff
         #image-self
@@ -927,16 +945,11 @@ class Ship:
         data_db_cursor.execute('SELECT * FROM ships WHERE ID='+str(index))
         shipdata=data_db_cursor.fetchall()[0]
 
-        #define self data
-        print('\n')
-        self.print('Defining ship: ')
-        self.print('Ship line: '+str(shipdata))
+        self.energy_module=copy(items_dict.get(shipdata[1]))
+        self.energy_module.current_hp=self.energy_module.hp*shipdata[7]
+        self.shield=copy(items_dict.get(shipdata[2]))
+        self.shield.current_hp= self.shield.hp*shipdata[8]
 
-        self.energy_percent=shipdata[7]
-        self.shield_percent=shipdata[8]
-
-        self.energy_module=Energy_module(shipdata[1],self.energy_percent)
-        self.shield=Shield(shipdata[2],self.shield_percent)
 
         self.skin=shipdata[3]
 
@@ -947,11 +960,14 @@ class Ship:
         self.weapon=[]
         for i in range(3):
             self.weapon.append(None)
+        self.weapon[0]=copy(items_dict.get(shipdata[4]))
+        self.weapon[1]=copy(items_dict.get(shipdata[5]))
 
-        if shipdata[4]=='Air/Air Missle':
-            self.weapon[0]=AA_missle(shipdata[4])
-        if shipdata[5]=='Machine Gun':
-            self.weapon[1]=Machine_gun(shipdata[5])
+
+        #if shipdata[4]=='Air/Air Missle':
+          #  self.weapon[0]=AA_missle(shipdata[4])
+       # if shipdata[5]=='Machine Gun':
+         #   self.weapon[1]=Machine_gun(shipdata[5])
 
         #control
         self.movetime=pygame.time.get_ticks()
