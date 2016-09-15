@@ -938,7 +938,7 @@ class Laser_turret(Weapon):
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
             if self.has_target:
-                play_sound('laser_turret_fire')
+                 #play_sound('laser_turret_fire')
             else:
                 play_sound('laser_turret_prefire')
 
