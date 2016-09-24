@@ -38,15 +38,17 @@ from pygame.locals import *
 print('Importing pyganim library...')
 import pyganim
 
-#deve-se pre incializar esta merda! pq se nao fica com lag de entrada
-pygame.mixer.pre_init(22050,8,2,32)
+
 
 print('Initializing pygame')
 pygame.init()
 pygame.font.init()
 pygame.display.init()
+
+# deve-se pre incializar esta merda! pq se nao fica com lag de entrada
+pygame.mixer.pre_init(44100, -16, 2, 32)
 pygame.mixer.init()
-sound_engine.mixer=sound_engine.Mixer(22050,16,32)
+sound_engine.mixer=sound_engine.Mixer(44100,16,32)
 
 #CONFIGURAÇOES
 sresH=1280
