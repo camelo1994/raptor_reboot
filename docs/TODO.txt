@@ -1,10 +1,11 @@
 
 TO DO LIST:
 reduzir tamanho das sparks?:???????
+escrever guide de adicionar novas armas
 
 
 implementar:
-
+terminar de implementar a laser turret
 
 mixxer durante missao
 ch0-bgm menu
