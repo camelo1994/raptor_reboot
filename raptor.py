@@ -657,8 +657,7 @@ while 1:
 
             #debug_text
             a=pygame.time.get_ticks()
-            renderer.debug_text.update_text('  '+str(menu.cursor.posY)+')'\
-                                            +'  mBtt'+str(menu.cursor.buttons)\
+            renderer.debug_text.update_text('mBtt'+str(menu.cursor.buttons)\
                                             +'  dpos('+str(desired_pos)+')'\
                                             +'  nProj:'+str(len(render.projectiles))\
                                             +'  nObj:'+str(len(render.objects))\
@@ -667,7 +666,7 @@ while 1:
                                             +'  HP:'+str(menu.player.ship.energy_module.current_hp)\
                                             +'  Shld:'+str(menu.player.ship.shield.current_hp)\
                                             +'  plyr$:'+str(menu.player.money)\
-                                            +'  Time:'+str(a)\
+                                            +'  nLines:'+str(len(render.lines))\
                                             +'  Dist:'+str(distance)\
                                             +'  Enemy:'+str(next_ship)+'/'+str(total_ships)\
                                             +'  afterwavetime: '+str(a-last_ship_killed_time)\
