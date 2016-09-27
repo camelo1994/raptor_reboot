@@ -934,6 +934,11 @@ class Laser_turret(Weapon):
         self.clock2=pygame.time.get_ticks()
         self.shot=False
 
+
+
+    def acquire_target(self):
+        self.target_id=7
+
     def fire(self,pos):
         if self.shot:
             if pygame.time.get_ticks()-self.clock2>=20:
@@ -1644,3 +1649,12 @@ def get_speed_list(list):
 
 def check_point(desired,current,tol):
     return abs(desired[0]-current[0])<=tol and abs(desired[1]-current[1])<=tol
+
+def get_distance(ax,ay,bx,by):
+    x=abs(ax-bx)
+    y=abs(ay-by)
+    y=y**2
+    x=x**2
+    d=int(nath.sqrt(x+y))
+    return d
+

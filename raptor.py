@@ -9,10 +9,6 @@ Created on 25/06/2016
 
 '''
 
-
-
-
-
 import os,sys,random,time,threading,sqlite3,colorama
 import sound_engine,classes
 
