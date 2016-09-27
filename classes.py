@@ -125,7 +125,7 @@ def start_sprite_dict():
         name='laser_turret_hit'
         w=80
         h=80
-        t=20
+        t=50
         n=4
         spritelist=[]
         for i in range(n):
@@ -177,7 +177,7 @@ def start_audio_dict():
     # barulho do prefire laser turret
     if 1:
         name='laser_turret_prefire'
-        vol=0.3
+        vol=0.5
         aux='sounds/weapons/'+name+'.ogg'
         aux=pygame.mixer.Sound(aux)
         aux.set_volume(SFXVOL*vol)
@@ -186,7 +186,7 @@ def start_audio_dict():
     # barulho da laser turret
     if 1:
         name='laser_turret_fire'
-        vol=0.3
+        vol=1
         aux='sounds/weapons/'+name+'.ogg'
         aux=pygame.mixer.Sound(aux)
         aux.set_volume(SFXVOL*vol)
@@ -230,7 +230,7 @@ def start_items_dict():
     name='Laser Turret'
     aux=Laser_turret(name)
     items_dict[name]=aux
-#dsadsdasdasdas
+
 
 # chamadas DE SPAWN - x,y é o centro da animação!!!
 def spawn_sprite(x,y,key,dx=0,dy=0):
@@ -726,6 +726,12 @@ class Projectile(Object):
         return self.check_out()
 
 
+class pseudo_Projectile:
+    def __init__(self,dmg,origin):
+        self.damage=dmg
+        self.origin=origin
+
+
 class MenuButton(Object):  # (imagefileA,imagefileB,PosH,PosV,mode=None):
     def __init__(self,imagefileA,imagefileB,PosH,PosV,mode=None):
         self.imageB=pygame.image.load(imagefileB).convert_alpha()
@@ -930,14 +936,26 @@ class Machine_gun(Weapon):
 class Laser_turret(Weapon):
     def define_projectile(self):
         self.cooldown=self.data[3]
-        self.has_target=None
+        self.target=None
         self.clock2=pygame.time.get_ticks()
         self.shot=False
+        self.proj=pseudo_Projectile(self.data[2],'Laser Turret')
 
 
 
-    def acquire_target(self):
-        self.target_id=7
+    def acquire_target(self,pos):
+        if len(render.enemy_ships)>0:
+            k=0
+            d=0
+            for i in render.enemy_ships:
+                dist=get_distance(i.rect.center,pos)
+                if dist<d or d==0:
+                    d=dist
+                    self.target=k
+                k+=1
+        else:
+            self.target=None
+
 
     def fire(self,pos):
         if self.shot:
@@ -947,8 +965,11 @@ class Laser_turret(Weapon):
 
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
-            if self.has_target:
-                pass  # play_sound('laser_turret_fire')
+            self.acquire_target(pos)
+            if self.target != None:
+                if check_if_on_screen(render.enemy_ships[self.target].rect):
+                    play_sound('laser_turret_fire')
+                    render.enemy_ships[self.target].take_damage(self.proj)
             else:
                 play_sound('laser_turret_prefire')
 
@@ -1318,7 +1339,7 @@ class Ship:
 # ships inimigas
 # seletor de sprites dependendo do dano
 def damage_taken_sprite_selector(source):
-    # machine gun
+
     if source.origin=='Machine GunL' or source.origin=='Machine GunR':
         a=random.randrange(4)
         if a<=1:
@@ -1327,18 +1348,18 @@ def damage_taken_sprite_selector(source):
             return 'blue_spark'
         else:
             return 'red_spark'
-    # aa_missle
     elif source.origin=='Air/Air Missle':
         return 'small_explosion'
-
+    elif source.origin=='Laser Turret':
+        return 'laser_turret_hit'
     # player
     elif source.origin=='Player':
         return 'medium_explosion'
 
-
+#-----------/> AS SHIPS ESTAO HARDCODED INDIVIDUALMENTE!!!!!!!!!!!!
 class enemy_ship_0:
     def __init__(self,*args,**kwargs):  # tem q passar pos_list,e spawn_dist nos kwargs
-        self.hp=1000
+        self.hp=2000
         self.cooldown=int((1/0.7)*1000)
         self.value=1000
 
@@ -1455,6 +1476,7 @@ class enemy_ship_0:
 
     def take_damage(self,source):
         self.hp-=source.damage
+        spawn_sprite(self.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
 
         # se morreu...
         if self.hp<=0:  # faz toda a ceniunha
@@ -1463,13 +1485,11 @@ class enemy_ship_0:
             spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')  # --tem q ser a medium
             play_sound('medium_explosion')
             return True
-        else:  # so toma dano
-            spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
 
 
 class enemy_ship_1:
     def __init__(self,*args,**kwargs):  # tem q passar pos_list,e spawn_dist nos kwargs
-        self.hp=500
+        self.hp=2500
         self.cooldown=int((1/1)*1000)
         self.value=500
 
@@ -1585,6 +1605,7 @@ class enemy_ship_1:
 
     def take_damage(self,source):
         self.hp-=source.damage
+        spawn_sprite(self.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
 
         # se morreu...
         if self.hp<=0:  # faz toda a ceniunha
@@ -1593,8 +1614,6 @@ class enemy_ship_1:
             spawn_sprite(self.rect.centerx,self.rect.centery,'medium_explosion')  # --tem q ser a medium
             play_sound('medium_explosion')
             return True
-        else:  # so toma dano
-            spawn_sprite(source.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
 
 
 # FUNÇOES AUXILIARES
@@ -1650,11 +1669,18 @@ def get_speed_list(list):
 def check_point(desired,current,tol):
     return abs(desired[0]-current[0])<=tol and abs(desired[1]-current[1])<=tol
 
-def get_distance(ax,ay,bx,by):
-    x=abs(ax-bx)
-    y=abs(ay-by)
+
+def get_distance(p1,p2):
+    x=abs(p1[0]-p2[0])
+    y=abs(p1[1]-p2[1])
     y=y**2
     x=x**2
-    d=int(nath.sqrt(x+y))
+    d=int(math.sqrt(x+y))
     return d
+
+def check_if_on_screen(rect):
+    if rect.right>0 and rect.left<sresH and rect.top>-20 and rect.bottom<sresV+20:
+        return True
+    else:
+        return False
 

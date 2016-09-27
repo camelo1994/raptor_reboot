@@ -657,18 +657,17 @@ while 1:
                                             +'  dpos('+str(desired_pos)+')'\
                                             +'  nProj:'+str(len(render.projectiles))\
                                             +'  nObj:'+str(len(render.objects))\
-                                            +'  nAnim:'+str(len(render.sprites))\
                                             +'  nEnemy:'+str(len(render.enemy_ships))\
                                             +'  HP:'+str(menu.player.ship.energy_module.current_hp)\
                                             +'  Shld:'+str(menu.player.ship.shield.current_hp)\
                                             +'  plyr$:'+str(menu.player.money)\
-                                            +'  nLines:'+str(len(render.lines))\
                                             +'  Dist:'+str(distance)\
                                             +'  Enemy:'+str(next_ship)+'/'+str(total_ships)\
-                                            +'  afterwavetime: '+str(a-last_ship_killed_time)\
                                             +'  MainFPS:'+str(main_engine_fps_show)\
                                             +'  RenderFPS:'+str(renderer.fps_show)\
-                                            +'  fTime: '+str(renderer.frametime)+'ms',colors.WHITE)
+                                            +'  fTime: '+str(renderer.frametime)+'ms'\
+                                            +'  laserTgt: '+str(render.player.weapon[0].target),colors.WHITE)
+
 
 
 

@@ -5,7 +5,7 @@ escrever guide de adicionar novas armas
 
 
 implementar:
-terminar de implementar a laser turret
+terminar de implementar a laser turret-> FALTA POR A LINHA DURANTE O TIRO!!!!!!!!
 
 mixxer durante missao
 ch0-bgm menu
