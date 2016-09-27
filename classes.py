@@ -888,6 +888,8 @@ class AA_missle(Weapon):
             # toca barulinho
             sound_engine.mixer.channel[4].play(self.fire_sound)
 
+    def unfire(self):
+        pass
 
 class Machine_gun(Weapon):
     def define_projectile(self):
@@ -932,16 +934,20 @@ class Machine_gun(Weapon):
             # toca barulinho
             sound_engine.mixer.channel[5].play(self.fire_sound)
 
+    def unfire(self):
+        pass
 
 class Laser_turret(Weapon):
     def define_projectile(self):
         self.cooldown=self.data[3]
+        self.cooldown2=self.cooldown/2
         self.target=None
         self.clock2=pygame.time.get_ticks()
         self.shot=False
         self.proj=pseudo_Projectile(self.data[2],'Laser Turret')
 
-
+    def enter_battle(self,n):
+        self.line_n=n
 
     def acquire_target(self,pos):
         if len(render.enemy_ships)>0:
@@ -956,12 +962,24 @@ class Laser_turret(Weapon):
         else:
             self.target=None
 
+    def set_line(self,start,end):
+        render.lines[self.line_n].start=start
+        render.lines[self.line_n].end=end
+        render.lines[self.line_n+1].start=start
+        render.lines[self.line_n+1].end=end
+
+    def reset_line(self):
+        render.lines[self.line_n].start=(0,0)
+        render.lines[self.line_n].end=(0,0)
+        render.lines[self.line_n+1].start=(0,0)
+        render.lines[self.line_n+1].end=(0,0)
 
     def fire(self,pos):
         if self.shot:
-            if pygame.time.get_ticks()-self.clock2>=20:
-                self.clock2=pygame.time.get_ticks()
-                pass
+            if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
+
+                self.reset_line()
+                self.shot=False
 
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
@@ -970,8 +988,14 @@ class Laser_turret(Weapon):
                 if check_if_on_screen(render.enemy_ships[self.target].rect):
                     play_sound('laser_turret_fire')
                     render.enemy_ships[self.target].take_damage(self.proj)
+                    self.set_line(pos,render.enemy_ships[self.target].rect.center)
+                    self.shot=True
+                    self.clock2=pygame.time.get_ticks()
             else:
                 play_sound('laser_turret_prefire')
+
+    def unfire(self):
+        self.reset_line()
 
 
 # weapons dos inimigos
@@ -1264,6 +1288,11 @@ class Ship:
             if i!=None:
                 i.fire(self.rect.center)
 
+    def unfire(self):
+        for i in self.weapon:
+            if i!=None:
+                i.unfire()
+
     def enter_battle(self):
         self.print('Entering battle')
         self.print('Initlizing back jets')
@@ -1286,6 +1315,16 @@ class Ship:
         for i in range(100):
             a=(i+1)*8-4
             render.lines.append(line((5,800-a),(25,800-a),colors.YELLOW,3))
+
+        #inicializa TOOLS PARA armas
+        self.line_n=len(render.lines)
+        render.lines.append(line((0,0),(0,0),colors.RED,4))
+        render.lines.append(line((0,0),(0,0),colors.YELLOW,1))
+
+        if self.weapon[0].name=='Laser Turret':
+            print('oi')
+            self.weapon[0].enter_battle(self.line_n)
+
 
         self.update_bars()
 
@@ -1359,7 +1398,7 @@ def damage_taken_sprite_selector(source):
 #-----------/> AS SHIPS ESTAO HARDCODED INDIVIDUALMENTE!!!!!!!!!!!!
 class enemy_ship_0:
     def __init__(self,*args,**kwargs):  # tem q passar pos_list,e spawn_dist nos kwargs
-        self.hp=2000
+        self.hp=1000
         self.cooldown=int((1/0.7)*1000)
         self.value=1000
 
@@ -1489,7 +1528,7 @@ class enemy_ship_0:
 
 class enemy_ship_1:
     def __init__(self,*args,**kwargs):  # tem q passar pos_list,e spawn_dist nos kwargs
-        self.hp=2500
+        self.hp=750
         self.cooldown=int((1/1)*1000)
         self.value=500
 

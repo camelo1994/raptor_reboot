@@ -152,12 +152,7 @@ class render_thread_class(threading.Thread):
                     if i.alive:
                         i.blit(self.screen)
 
-                #printa o player - tem seu proprio blit()
-                if self.show_player:
-                    #é o sproy da nave
-                    for i in sprays:
-                        self.screen.blit(i.image,i.rect)
-                    player.blit(self.screen)
+
 
                 #printa sprites avulsos - possuem seu proprio blit -  classe Animation()
                 for i in sprites:
@@ -170,6 +165,13 @@ class render_thread_class(threading.Thread):
                 #printa textos
                 for i in texts:
                     self.screen.blit(i.text,i.rect)
+
+                # printa o player - tem seu proprio blit()
+                if self.show_player:
+                    # é o sproy da nave
+                    for i in sprays:
+                        self.screen.blit(i.image,i.rect)
+                    player.blit(self.screen)
 
 
                 #prints debug text

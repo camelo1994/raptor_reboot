@@ -375,6 +375,7 @@ while 1:
                 desired_pos=[]
                 desired_pos.append(sresH/2)
                 desired_pos.append(100)
+                was_firing=False
 
                 #fundo
                 file='images/background.png'#fundo
@@ -638,6 +639,10 @@ while 1:
             #atira se tiver com wm1 apertado
             if menu.cursor.buttons[0]:
                 render.player.fire()
+                was_firing=True
+            elif was_firing:
+                render.player.unfire()
+                was_firing=False
 
 
             for i in render.enemy_ships:
@@ -657,7 +662,8 @@ while 1:
                                             +'  dpos('+str(desired_pos)+')'\
                                             +'  nProj:'+str(len(render.projectiles))\
                                             +'  nObj:'+str(len(render.objects))\
-                                            +'  nEnemy:'+str(len(render.enemy_ships))\
+                                            +'  nEnemy:'+str(len(render.enemy_ships)) \
+                                            +'  nLines:'+str(len(render.lines)) \
                                             +'  HP:'+str(menu.player.ship.energy_module.current_hp)\
                                             +'  Shld:'+str(menu.player.ship.shield.current_hp)\
                                             +'  plyr$:'+str(menu.player.money)\
