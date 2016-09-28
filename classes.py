@@ -21,7 +21,9 @@ sresH=None
 sresV=None
 
 
-# inicializacoes
+#######################################
+######### INITIALIZATION ##############
+#######################################
 def init(a,b):
     global data_db,items_db,data_db_cursor,items_db_cursor
     # connect to Database
@@ -204,31 +206,38 @@ def start_enemy_dict():
 def start_items_dict():
     print('Initializing items dictionary')
 
-    # ITEMS
     # ENERGY MODULE
     name='Energy Module'
     aux=Energy_module(name,1)
     items_dict[name]=aux
 
-    # PHASE SHIELD
+    # Phase Shield
     name='Phase Shield'
     aux=Shield(name,1)
     items_dict[name]=aux
 
-    # WEAPONS
-    # MACHINE GUN
-    name='Machine Gun'
-    aux=Machine_gun(name)
+    # Machine gun
+    name='a'
+    real_name='Machine Gun'
+    aux=Machine_gun(real_name)
     items_dict[name]=aux
 
-    # AIR AIR MISSLE
-    name='Air/Air Missle'
-    aux=AA_missle(name)
+    # AA Missle
+    name='0'
+    real_name='Air/Air Missle'
+    aux=AA_missle(real_name)
     items_dict[name]=aux
 
     # Laser Turret
-    name='Laser Turret'
-    aux=Laser_turret(name)
+    name='5'
+    real_name='Laser Turret'
+    aux=Laser_turret(real_name)
+    items_dict[name]=aux
+
+    # Twin Laser
+    name='9'
+    real_name='Twin Laser'
+    aux=Twin_Laser(real_name)
     items_dict[name]=aux
 
 
@@ -319,7 +328,9 @@ def load_wave_list(id,list,loading_line=None):
     return b,c
 
 
-# CLASSES GERAIS
+#######################################
+######### GENERAL CLASSES #############
+#######################################
 class text:  # (str,ttf_file,size,color,cx,cy,abs?) none=center / 1=topleft / 2=topright
     def __init__(self,str,ttf_file,size,color,cx,cy,abs=None):
         # local defs
@@ -454,7 +465,7 @@ class Cursor:
             self.posdX=0
             self.posdY=0
 
-
+#menu -> VIC - Very Important Class
 class menu:  # (settings_file,profiles_file,crosshair_file,bgm_file):
     def __init__(self,crosshair_file,bgm_file,bgm_file2,button_sound_file,button_select_file):
         print('\t')
@@ -786,7 +797,7 @@ class Background:
             screen.blit(i.image,i.rect)
 
 
-# SPRITEEEEEEESSSSSSSSSSSSS
+# SPRITES
 class anim_rect:
     def __init__(self,cx,cy,dx,dy,h,w):
         self.dx=dx
@@ -822,7 +833,10 @@ class Animation:
                 return True
 
 
-# WEAAAAAAAAAPONS
+#######################################
+############ WEAPONS ##################
+#######################################
+# MOTHERCLASS
 class Weapon:
     def __init__(self,name):
         global items_db_cursor
@@ -850,7 +864,7 @@ class Weapon:
         self.clock=pygame.time.get_ticks()
 
 
-# weapons do player
+# PLAYER WEAPONS
 class AA_missle(Weapon):
     def define_projectile(self):
         self.projectile_image=pygame.image.load('images/projectiles/aa_missle.png').convert_alpha()
@@ -858,6 +872,7 @@ class AA_missle(Weapon):
         self.projectile_speedV=-12
         self.cooldown=self.data[3]
         self.stringName='AIM-31 "Mauler" Air/Air Missile'
+        self.movement_update=False
         # audio
         aux='sounds/weapons/aa_missle.ogg'
         self.fire_sound=pygame.mixer.Sound(aux)
@@ -891,6 +906,7 @@ class AA_missle(Weapon):
     def unfire(self):
         pass
 
+
 class Machine_gun(Weapon):
     def define_projectile(self):
         self.projectile_image=pygame.image.load('images/projectiles/mg.png').convert_alpha()
@@ -901,6 +917,7 @@ class Machine_gun(Weapon):
         self.proj_style_right=True
         self.cooldown=self.data[3]
         self.stringName='MG21C Twin Reaver Machine Guns'
+        self.movement_update=False
 
         # audio
         aux='sounds/weapons/mg.ogg'
@@ -916,11 +933,11 @@ class Machine_gun(Weapon):
             b=random.randrange(11)
             if a>5:
                 render.projectiles.append(
-                    Projectile(self.projectile_image_inv,pos[0]+15,pos[1],0,self.projectile_speedV,damage=self.damage,
+                    Projectile(self.projectile_image_inv,pos[0]+20,pos[1],0,self.projectile_speedV,damage=self.damage,
                                friendly=True,origin=self.name+'R'))
             else:
                 render.projectiles.append(
-                    Projectile(self.projectile_image,pos[0]+15,pos[1],0,self.projectile_speedV,damage=self.damage,
+                    Projectile(self.projectile_image,pos[0]+20,pos[1],0,self.projectile_speedV,damage=self.damage,
                                friendly=True,origin=self.name+'R'))
             if b>5:
                 render.projectiles.append(
@@ -937,10 +954,80 @@ class Machine_gun(Weapon):
     def unfire(self):
         pass
 
+
 class Laser_turret(Weapon):
     def define_projectile(self):
         self.cooldown=self.data[3]
-        self.cooldown2=self.cooldown/2
+        self.cooldown2=32
+        self.target=None
+        self.clock2=pygame.time.get_ticks()
+        self.shot=False
+        self.proj=pseudo_Projectile(self.data[2],'Laser Turret')
+        self.movement_update=True
+        self.stringName='OD55 "Odin" Laser Turret'
+
+    def enter_battle(self,n):
+        self.line_n=n
+
+    def acquire_target(self,pos):
+        if len(render.enemy_ships)>0:
+            k=0
+            d=0
+            for i in render.enemy_ships:
+                dist=get_distance(i.rect.center,pos)
+                if dist<d or d==0:
+                    d=dist
+                    self.target=k
+                k+=1
+        else:
+            self.target=None
+
+    def set_line(self,start,end):
+        render.lines[self.line_n].start=start
+        render.lines[self.line_n].end=end
+        render.lines[self.line_n+1].start=start
+        render.lines[self.line_n+1].end=end
+
+    def update_line(self,pos):
+        render.lines[self.line_n].start=pos
+        render.lines[self.line_n+1].start=pos
+
+    def reset_line(self):
+        render.lines[self.line_n].start=(0,0)
+        render.lines[self.line_n].end=(0,0)
+        render.lines[self.line_n+1].start=(0,0)
+        render.lines[self.line_n+1].end=(0,0)
+
+    def fire(self,pos):
+        if self.shot:
+            if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
+                self.reset_line()
+                self.shot=False
+
+        if pygame.time.get_ticks()-self.clock>=self.cooldown:
+            self.clock=pygame.time.get_ticks()
+            self.acquire_target(pos)
+            if self.target!=None:
+                if check_if_on_screen(render.enemy_ships[self.target].rect):
+                    play_sound('laser_turret_fire')
+                    render.enemy_ships[self.target].take_damage(self.proj)
+                    self.set_line(pos,render.enemy_ships[self.target].rect.center)
+                    self.shot=True
+                    self.clock2=pygame.time.get_ticks()
+            else:
+                play_sound('laser_turret_prefire')
+
+    def unfire(self):
+        self.reset_line()
+
+    def update(self,pos):
+        self.update_line(pos)
+
+
+class Twin_Laser(Weapon):
+    def define_projectile(self):
+        self.cooldown=self.data[3]
+        self.cooldown2=32
         self.target=None
         self.clock2=pygame.time.get_ticks()
         self.shot=False
@@ -977,14 +1064,13 @@ class Laser_turret(Weapon):
     def fire(self,pos):
         if self.shot:
             if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
-
                 self.reset_line()
                 self.shot=False
 
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
             self.acquire_target(pos)
-            if self.target != None:
+            if self.target!=None:
                 if check_if_on_screen(render.enemy_ships[self.target].rect):
                     play_sound('laser_turret_fire')
                     render.enemy_ships[self.target].take_damage(self.proj)
@@ -998,7 +1084,7 @@ class Laser_turret(Weapon):
         self.reset_line()
 
 
-# weapons dos inimigos
+# ENEMIES WEAPONS
 class flak:
     def __init__(self,name):
         global items_db_cursor
@@ -1022,7 +1108,9 @@ class flak:
         self.cooldown=int((1/self.data[1])*1000)
 
 
-# items
+#######################################
+############## ITEMS ##################
+#######################################
 class Shield:
     def __init__(self,name,perc):
         global items_db_cursor
@@ -1078,24 +1166,21 @@ class Ship:
         global items_db_cursor,data_db_cursor
 
         data_db_cursor.execute('SELECT * FROM ships WHERE ID='+str(index))
-        shipdata=data_db_cursor.fetchall()[0]
+        self.shipdata=data_db_cursor.fetchall()[0]
 
-        self.energy_module=copy(items_dict.get(shipdata[1]))
-        self.energy_module.current_hp=self.energy_module.hp*shipdata[7]
-        self.shield=copy(items_dict.get(shipdata[2]))
-        self.shield.current_hp=self.shield.hp*shipdata[8]
+        self.energy_module=copy(items_dict.get(self.shipdata[1]))
+        self.energy_module.current_hp=self.energy_module.hp*self.shipdata[7]
+        self.shield=copy(items_dict.get(self.shipdata[2]))
+        self.shield.current_hp=self.shield.hp*self.shipdata[8]
 
-        self.skin=shipdata[3]
+        self.skin=self.shipdata[3]
 
         # para colisao
         self.origin='Player'
         self.damage=self.energy_module.current_hp*1000
 
-        self.weapon=[]
-        for i in range(3):
-            self.weapon.append(None)
-        self.weapon[0]=copy(items_dict.get(shipdata[4]))
-        self.weapon[1]=copy(items_dict.get(shipdata[5]))
+        #weapons
+        self.load_weapons()
 
         # control
         self.movetime=pygame.time.get_ticks()
@@ -1159,6 +1244,13 @@ class Ship:
             self.shield_sound=pygame.mixer.Sound(aux)
             self.shield_sound.set_volume(SFXVOL)
 
+        # audio de trocar de arma
+        if 1:
+            aux='sounds/ship/change_weapon.ogg'
+            self.switch_weapon_sound=pygame.mixer.Sound(aux)
+            self.switch_weapon_sound.set_volume(SFXVOL*0.9)
+
+
         if 1:
             if enable_shadows:
                 self.print('\t loading ship shadows...')
@@ -1178,7 +1270,40 @@ class Ship:
                 # for i in self.shadow_images:
                 # i.set_alpha(50)
                 render.player_shadow=Object(self.shadow_images[2],400,400,0,0)
-        # sombras
+                # sombras
+
+
+    def load_weapons(self):
+        # weapons
+        self.weapon_magazine=[]
+        self.active_weapon=self.shipdata[5]
+        weapons_to_load=self.shipdata[4]
+
+        for i in range(13):
+            self.weapon_magazine.append(None)
+        j=0
+        possibilidades=['0','1','2','3','4','5','6','7','8','9','a','b','c']
+        for i in possibilidades:
+            if i in weapons_to_load:
+                self.weapon_magazine[j]=copy(items_dict.get(i))
+                #print(j)
+                #print(self.weapon_magazine[j].name)
+            j+=1
+
+    def switch_weapon(self,weapon_object_number,op=None):
+        if op==None:
+            self.active_weapon+=1
+            while(self.weapon_magazine[self.active_weapon]==None):
+                self.active_weapon+=1
+                if self.active_weapon==10:
+                    self.active_weapon=0
+            self.switch_weapon_sound.play()
+        else:
+            if self.weapon_magazine[op]!=None:
+                self.switch_weapon_sound.play()
+                self.active_weapon=op
+        #ja troca o iconezinho do render!!
+        render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
 
     def move(self,p):
         x=p[0]-self.rect.centerx
@@ -1188,6 +1313,8 @@ class Ship:
 
             # anda a nave
             self.rect.move_ip(x,y)
+
+
 
             if enable_shadows:
                 render.player_shadow.rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
@@ -1284,14 +1411,15 @@ class Ship:
                 self.last_jet=n
 
     def fire(self):
-        for i in self.weapon:
-            if i!=None:
-                i.fire(self.rect.center)
+        #atira com as passivas
+        for i in range(3):
+            if self.weapon_magazine[10+i]!=None:
+                self.weapon_magazine[10+i].fire(self.rect.center)
+        #atira com a ativa
+        self.weapon_magazine[self.active_weapon].fire(self.rect.center)
 
     def unfire(self):
-        for i in self.weapon:
-            if i!=None:
-                i.unfire()
+        self.weapon_magazine[self.active_weapon].unfire()
 
     def enter_battle(self):
         self.print('Entering battle')
@@ -1316,15 +1444,13 @@ class Ship:
             a=(i+1)*8-4
             render.lines.append(line((5,800-a),(25,800-a),colors.YELLOW,3))
 
-        #inicializa TOOLS PARA armas
+        # inicializa TOOLS PARA armas
         self.line_n=len(render.lines)
         render.lines.append(line((0,0),(0,0),colors.RED,4))
         render.lines.append(line((0,0),(0,0),colors.YELLOW,1))
 
-        if self.weapon[0].name=='Laser Turret':
-            print('oi')
-            self.weapon[0].enter_battle(self.line_n)
-
+        if self.weapon_magazine[5]!=None:
+            self.weapon_magazine[5].enter_battle(self.line_n)
 
         self.update_bars()
 
@@ -1375,10 +1501,11 @@ class Ship:
             return self.rect.colliderect(rect)
 
 
-# ships inimigas
+#######################################
+######### SHIPS INIMIGAS ##############
+#######################################
 # seletor de sprites dependendo do dano
 def damage_taken_sprite_selector(source):
-
     if source.origin=='Machine GunL' or source.origin=='Machine GunR':
         a=random.randrange(4)
         if a<=1:
@@ -1395,7 +1522,8 @@ def damage_taken_sprite_selector(source):
     elif source.origin=='Player':
         return 'medium_explosion'
 
-#-----------/> AS SHIPS ESTAO HARDCODED INDIVIDUALMENTE!!!!!!!!!!!!
+
+#-/> AS SHIPS ESTAO HARDCODED INDIVIDUALMENTE!!!!!!!!!!!!
 class enemy_ship_0:
     def __init__(self,*args,**kwargs):  # tem q passar pos_list,e spawn_dist nos kwargs
         self.hp=1000
@@ -1655,7 +1783,9 @@ class enemy_ship_1:
             return True
 
 
-# FUNÇOES AUXILIARES
+#########################################
+########### FUNÇOES AUXILIARES ##########
+#########################################
 def interpolate(value,fromLow,fromHigh,toLow,toHigh):
     # interpolação simples linear
     return ((toHigh-toLow)/(fromHigh-fromLow))*(value-fromLow)+toLow
@@ -1717,9 +1847,9 @@ def get_distance(p1,p2):
     d=int(math.sqrt(x+y))
     return d
 
+
 def check_if_on_screen(rect):
     if rect.right>0 and rect.left<sresH and rect.top>-20 and rect.bottom<sresV+20:
         return True
     else:
         return False
-

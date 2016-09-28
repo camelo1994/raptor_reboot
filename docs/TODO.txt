@@ -1,12 +1,18 @@
 
 TO DO LIST:
 reduzir tamanho das sparks?:???????
-escrever guide de adicionar novas armas
 
 
 implementar:
-terminar de implementar a laser turret-> FALTA POR A LINHA DURANTE O TIRO!!!!!!!!
+twilaser so ta copiado o texto
 
+estou fazendo a magazine de armas!!!
+SWOMZINHO DE QND TROCA DE ARMAAA!!!
+
+
+
+
+##########################################################################
 mixxer durante missao
 ch0-bgm menu
 ch1-bgm hangar
@@ -15,7 +21,7 @@ ch3-barulho vento
 ch4-missel(arma1)som de tiro, pew pew pew-ship controla
 ch5-mg(arma 2)
 ch6-explosao media
-
+##########################################################################
 
 
 
@@ -27,3 +33,21 @@ pngcrush_1_8.5_w64.exe -ow -rem iCCP -rem sRGB "F:\raptor_reboot\sprites\small_e
 
 render.lines.append(classes.line((20,740),(1200,740),colors.ORANGE_DARK,5))
 render.lines.append(classes.line((20,740),(1200,740),colors.YELLOW,1))
+
+
+INDEX DE ARMAS
+0 AIM-31 "Mauler" Air/Air Missile (2b-aamsl)
+1 Air/ground Missile (2b-aamsl)
+2 AARL-1201 "Scatterpack" Missile Pod, fires HR-20 Spike Missiles
+3 TH19 "Thor" Auto-Track Minigun (2b-tagmg)
+4 2.28 OD55 "Odin" Laser Turret (2b-lsrtr)
+5 Power Disruptor (2b-pwrdr)
+6 RX1 "Tsunami" Pulse Cannon (2b-plscn)
+8 MSIL-ATLAS Deathray (2c-dthry)
+9 2.32 CAL-10 "Eclipse" Twin Lasers (2c-eclps)
+
+PASSIVAS
+
+a-10 mg
+b-11 microfire
+c-12 plasma gun

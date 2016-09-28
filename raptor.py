@@ -47,8 +47,8 @@ sound_engine.mixer=sound_engine.Mixer(22050,16,32)
 sresH=1280
 sresV=800
 fps=75
-BGMVOL=0.5
-SFXVOL=0.5
+BGMVOL=0.1
+SFXVOL=0.15
 enable_shadows=True
 
 
@@ -376,6 +376,7 @@ while 1:
                 desired_pos.append(sresH/2)
                 desired_pos.append(100)
                 was_firing=False
+                clicked_wm2=False
 
                 #fundo
                 file='images/background.png'#fundo
@@ -387,7 +388,8 @@ while 1:
                 render.player=menu.player.ship
                 renderer.show_player=True
 
-                render.objects.append(menu.player.ship.weapon[0])
+                weapon_object_number=len(render.objects)
+                render.objects.append(menu.player.ship.weapon_magazine[menu.player.ship.active_weapon])
 
                 #linhas
                 render.lines.append(classes.line((1250,0),(1250,800),colors.WHITE,1))
@@ -542,21 +544,12 @@ while 1:
                         menu.cursor.diff_mode()
                     if event.key==K_F1:
                         menu.swap('hangar')
-                    if event.key==K_F3:
-                        classes.spawn_sprite(100,100,'small_explosion')
-                    if event.key==K_F4:
-                        classes.spawn_sprite(100,100,'small_explosion',5,5)
-                    if event.key==K_F2:
-                        render.player.take_damage(1)
-                    if event.key==K_F12:
-                        render.player.shield.current_hp+=10
-                    if event.key==K_F11:
-                        render.player.energy_module.current_hp+=10
-                    if event.key==K_F8:
-                        render.enemy_ships[0].vy-=1
 
-            #atualiza o menu
+            # atualiza o menu
             menu.update(renderer)
+
+
+
 
             #move a nave &verifica posição desejada para ver se cabe na tela
             if desired_pos[0]+menu.cursor.posdX<sresH-34 and desired_pos[0]+menu.cursor.posdX>34:
@@ -644,6 +637,16 @@ while 1:
                 render.player.unfire()
                 was_firing=False
 
+            #troca de arma se APERTOU wm2
+            if not clicked_wm2:
+                if menu.cursor.buttons[2]:
+                    render.player.switch_weapon(weapon_object_number)
+                clicked_wm2=True
+
+            if clicked_wm2:
+                if not menu.cursor.buttons[2]:
+                    clicked_wm2=False
+
 
             for i in render.enemy_ships:
                 i.fire()
@@ -671,8 +674,7 @@ while 1:
                                             +'  Enemy:'+str(next_ship)+'/'+str(total_ships)\
                                             +'  MainFPS:'+str(main_engine_fps_show)\
                                             +'  RenderFPS:'+str(renderer.fps_show)\
-                                            +'  fTime: '+str(renderer.frametime)+'ms'\
-                                            +'  laserTgt: '+str(render.player.weapon[0].target),colors.WHITE)
+                                            +'  fTime: '+str(renderer.frametime)+'ms',colors.WHITE)
 
 
 
