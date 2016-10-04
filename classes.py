@@ -22,7 +22,7 @@ sresV=None
 
 
 #######################################
-######### INITIALIZATION ##############
+######### INICIALIZAÇÃO ##############
 #######################################
 def init(a,b):
     global data_db,items_db,data_db_cursor,items_db_cursor
@@ -194,6 +194,16 @@ def start_audio_dict():
         aux.set_volume(SFXVOL*vol)
         audio_dict[name]=aux
 
+    # barulho do twin laser
+    if 1:
+        name='laser_turret_fire'
+        vol=1
+        aux='sounds/weapons/'+name+'.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*vol)
+        audio_dict[name]=aux
+
+
 
 def start_enemy_dict():
     print('Initializing enemies dictionary')
@@ -216,6 +226,8 @@ def start_items_dict():
     aux=Shield(name,1)
     items_dict[name]=aux
 
+
+    #os items do player temn qte rumn index melhorzin, pro magazine de arma funcionar das ships
     # Machine gun
     name='a'
     real_name='Machine Gun'
@@ -229,7 +241,7 @@ def start_items_dict():
     items_dict[name]=aux
 
     # Laser Turret
-    name='5'
+    name='4'
     real_name='Laser Turret'
     aux=Laser_turret(real_name)
     items_dict[name]=aux
@@ -329,7 +341,7 @@ def load_wave_list(id,list,loading_line=None):
 
 
 #######################################
-######### GENERAL CLASSES #############
+########## CLASSES GERAIS #############
 #######################################
 class text:  # (str,ttf_file,size,color,cx,cy,abs?) none=center / 1=topleft / 2=topright
     def __init__(self,str,ttf_file,size,color,cx,cy,abs=None):
@@ -836,7 +848,7 @@ class Animation:
 #######################################
 ############ WEAPONS ##################
 #######################################
-# MOTHERCLASS
+# CLASSA MAE
 class Weapon:
     def __init__(self,name):
         global items_db_cursor
@@ -864,7 +876,7 @@ class Weapon:
         self.clock=pygame.time.get_ticks()
 
 
-# PLAYER WEAPONS
+# WEAPONS DO CLIENTE
 class AA_missle(Weapon):
     def define_projectile(self):
         self.projectile_image=pygame.image.load('images/projectiles/aa_missle.png').convert_alpha()
@@ -904,6 +916,9 @@ class AA_missle(Weapon):
             sound_engine.mixer.channel[4].play(self.fire_sound)
 
     def unfire(self):
+        pass
+
+    def activate(self):
         pass
 
 
@@ -954,6 +969,9 @@ class Machine_gun(Weapon):
     def unfire(self):
         pass
 
+    def activate(self):
+        pass
+
 
 class Laser_turret(Weapon):
     def define_projectile(self):
@@ -968,6 +986,12 @@ class Laser_turret(Weapon):
 
     def enter_battle(self,n):
         self.line_n=n
+
+    def activate(self):
+        render.lines[self.line_n].color=colors.RED
+        render.lines[self.line_n].width=4
+        render.lines[self.line_n+1].color=colors.YELLOW
+        render.lines[self.line_n+1].width=1
 
     def acquire_target(self,pos):
         if len(render.enemy_ships)>0:
@@ -1007,15 +1031,19 @@ class Laser_turret(Weapon):
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
             self.acquire_target(pos)
+            val=None
             if self.target!=None:
                 if check_if_on_screen(render.enemy_ships[self.target].rect):
                     play_sound('laser_turret_fire')
-                    render.enemy_ships[self.target].take_damage(self.proj)
+                    if render.enemy_ships[self.target].take_damage(self.proj):
+                        val=render.enemy_ships[self.target].value
                     self.set_line(pos,render.enemy_ships[self.target].rect.center)
                     self.shot=True
                     self.clock2=pygame.time.get_ticks()
             else:
                 play_sound('laser_turret_prefire')
+
+            return val
 
     def unfire(self):
         self.reset_line()
@@ -1027,27 +1055,38 @@ class Laser_turret(Weapon):
 class Twin_Laser(Weapon):
     def define_projectile(self):
         self.cooldown=self.data[3]
-        self.cooldown2=32
+        self.cooldown2=100
         self.target=None
         self.clock2=pygame.time.get_ticks()
         self.shot=False
-        self.proj=pseudo_Projectile(self.data[2],'Laser Turret')
+        self.proj=pseudo_Projectile(self.data[2],'Twin Laser')
+        self.stringName='CAL-10 "Eclipse" Twin Lasers'
+
+        if 1:
+            self.TWIN_LASER_1CENTER=(80,172,255)
+            self.TWIN_LASER_1CENTER2=(221,233,244)
+
+            self.TWIN_LASER_2CENTER=(79,170,253)
+            self.TWIN_LASER_2CENTER2=(221,233,244)
+
+            self.TWIN_LASER_3CENTER=(71,150,236)
+            self.TWIN_LASER_3CENTER2=(81,171,255)
+
+            self.TWIN_LASER_4CENTER=(44,87,168)
+            self.TWIN_LASER_4CENTER2=(56,111,192)
 
     def enter_battle(self,n):
         self.line_n=n
 
-    def acquire_target(self,pos):
-        if len(render.enemy_ships)>0:
-            k=0
-            d=0
-            for i in render.enemy_ships:
-                dist=get_distance(i.rect.center,pos)
-                if dist<d or d==0:
-                    d=dist
-                    self.target=k
-                k+=1
-        else:
-            self.target=None
+    def activate(self):
+        render.lines[self.line_n].color=colors.RED
+        render.lines[self.line_n].width=4
+        render.lines[self.line_n+1].color=colors.YELLOW
+        render.lines[self.line_n+1].width=1
+
+    def move(self,center):
+        pass
+
 
     def set_line(self,start,end):
         render.lines[self.line_n].start=start
@@ -1064,27 +1103,17 @@ class Twin_Laser(Weapon):
     def fire(self,pos):
         if self.shot:
             if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
-                self.reset_line()
                 self.shot=False
 
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
-            self.acquire_target(pos)
-            if self.target!=None:
-                if check_if_on_screen(render.enemy_ships[self.target].rect):
-                    play_sound('laser_turret_fire')
-                    render.enemy_ships[self.target].take_damage(self.proj)
-                    self.set_line(pos,render.enemy_ships[self.target].rect.center)
-                    self.shot=True
-                    self.clock2=pygame.time.get_ticks()
-            else:
-                play_sound('laser_turret_prefire')
+            play_sound('laser_turret_fire')
 
     def unfire(self):
         self.reset_line()
 
 
-# ENEMIES WEAPONS
+# WEAPONS INIMIGAS
 class flak:
     def __init__(self,name):
         global items_db_cursor
@@ -1272,7 +1301,6 @@ class Ship:
                 render.player_shadow=Object(self.shadow_images[2],400,400,0,0)
                 # sombras
 
-
     def load_weapons(self):
         # weapons
         self.weapon_magazine=[]
@@ -1293,16 +1321,18 @@ class Ship:
     def switch_weapon(self,weapon_object_number,op=None):
         if op==None:
             self.active_weapon+=1
-            while(self.weapon_magazine[self.active_weapon]==None):
+            while(self.weapon_magazine[self.active_weapon]==None or self.active_weapon>=10):
                 self.active_weapon+=1
-                if self.active_weapon==10:
+                if self.active_weapon>=10:
                     self.active_weapon=0
             self.switch_weapon_sound.play()
         else:
             if self.weapon_magazine[op]!=None:
                 self.switch_weapon_sound.play()
                 self.active_weapon=op
+
         #ja troca o iconezinho do render!!
+        self.weapon_magazine[self.active_weapon].activate()
         render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
 
     def move(self,p):
@@ -1315,6 +1345,9 @@ class Ship:
             self.rect.move_ip(x,y)
 
 
+            # anda a arma se necessário
+            if self.active_weapon in [9]:
+                self.weapon_magazine[self.active_weapon.move(self.rect.center)]
 
             if enable_shadows:
                 render.player_shadow.rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
@@ -1415,8 +1448,10 @@ class Ship:
         for i in range(3):
             if self.weapon_magazine[10+i]!=None:
                 self.weapon_magazine[10+i].fire(self.rect.center)
+
+
         #atira com a ativa
-        self.weapon_magazine[self.active_weapon].fire(self.rect.center)
+        return self.weapon_magazine[self.active_weapon].fire(self.rect.center)
 
     def unfire(self):
         self.weapon_magazine[self.active_weapon].unfire()
@@ -1446,11 +1481,16 @@ class Ship:
 
         # inicializa TOOLS PARA armas
         self.line_n=len(render.lines)
-        render.lines.append(line((0,0),(0,0),colors.RED,4))
-        render.lines.append(line((0,0),(0,0),colors.YELLOW,1))
+        render.lines.append(line((0,0),(0,0),colors.WHITE,1))
+        render.lines.append(line((0,0),(0,0),colors.WHITE,1))
+        render.lines.append(line((0,0),(0,0),colors.WHITE,1))
+        render.lines.append(line((0,0),(0,0),colors.WHITE,1))
 
-        if self.weapon_magazine[5]!=None:
-            self.weapon_magazine[5].enter_battle(self.line_n)
+        for i in [4,9]:#<---- aqui tem q ter todos is indices de armas que  precisam de pre-inicialização
+            if self.weapon_magazine[i]!=None:
+                self.weapon_magazine[i].enter_battle(self.line_n)
+
+        self.weapon_magazine[self.active_weapon].activate()
 
         self.update_bars()
 

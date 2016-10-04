@@ -3,11 +3,11 @@ TO DO LIST:
 reduzir tamanho das sparks?:???????
 
 
-implementar:
-twilaser so ta copiado o texto
+IMPLEMENTAR:
+twiN laser so ta copiado o texto
+DAR UMA CHECADA NA SOMA DE DINHEIRO QUANDO A ARMA QUE MATA, PQ TA LAGANDO! n faço ideia pq
 
-estou fazendo a magazine de armas!!!
-SWOMZINHO DE QND TROCA DE ARMAAA!!!
+
 
 
 
@@ -24,6 +24,26 @@ ch6-explosao media
 ##########################################################################
 
 
+#################################################################################
+INDEX DE ARMAS
+0 AIM-31 "Mauler" Air/Air Missile (2b-aamsl)
+1 Air/ground Missile (2b-aamsl)
+2 AARL-1201 "Scatterpack" Missile Pod, fires HR-20 Spike Missiles
+3 TH19 "Thor" Auto-Track Minigun (2b-tagmg)
+4 2.28 OD55 "Odin" Laser Turret (2b-lsrtr)
+5 Power Disruptor (2b-pwrdr)
+6 RX1 "Tsunami" Pulse Cannon (2b-plscn)
+7 -----#
+8 MSIL-ATLAS Deathray (2c-dthry)
+9 2.32 CAL-10 "Eclipse" Twin Lasers (2c-eclps)
+
+PASSIVAS
+
+a-10 mg
+b-11 microfire
+c-12 plasma gun
+#################################################################################
+
 
 
 para remover iccp
@@ -35,19 +55,21 @@ render.lines.append(classes.line((20,740),(1200,740),colors.ORANGE_DARK,5))
 render.lines.append(classes.line((20,740),(1200,740),colors.YELLOW,1))
 
 
-INDEX DE ARMAS
-0 AIM-31 "Mauler" Air/Air Missile (2b-aamsl)
-1 Air/ground Missile (2b-aamsl)
-2 AARL-1201 "Scatterpack" Missile Pod, fires HR-20 Spike Missiles
-3 TH19 "Thor" Auto-Track Minigun (2b-tagmg)
-4 2.28 OD55 "Odin" Laser Turret (2b-lsrtr)
-5 Power Disruptor (2b-pwrdr)
-6 RX1 "Tsunami" Pulse Cannon (2b-plscn)
-8 MSIL-ATLAS Deathray (2c-dthry)
-9 2.32 CAL-10 "Eclipse" Twin Lasers (2c-eclps)
+twinn laser
+frame 1
+largura total 16px
+mid 8px
+frame 2
+igual
 
-PASSIVAS
+frame 3
+total 16
+mid 14
 
-a-10 mg
-b-11 microfire
-c-12 plasma gun
+
+
+
+
+
+
+

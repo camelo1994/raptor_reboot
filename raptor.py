@@ -19,7 +19,8 @@ from classes import *
 from colorama import Fore,Back,Style
 
 colorama.init()
-if 1:#boot no console
+#boot no console
+if 1:
     print('\n\n\n\n\n\n')
     print(Back.RED+Fore.WHITE+Style.BRIGHT+'RAPTOR: Call of the Birl'+Style.RESET_ALL+Back.RESET)
     print(Fore.BLACK+Back.LIGHTWHITE_EX+'Created by myself')
@@ -29,12 +30,10 @@ print('\nImporting pygame library...')
 import pygame
 from pygame.locals import *
 
-
-
 print('Importing pyganim library...')
 import pyganim
 
-#deve-se pre incializar esta merda! pq se nao fica com lag de entrada
+#deve-se pre-incializar esta merda! pq se nao fica com lag de entrada
 pygame.mixer.pre_init(frequency=22050,size=-16,channels=2,buffer=32)
 
 print('Initializing pygame')
@@ -44,28 +43,26 @@ pygame.mixer.init()
 sound_engine.mixer=sound_engine.Mixer(22050,16,32)
 
 #CONFIGURAÇOES
-sresH=1280
-sresV=800
-fps=75
-BGMVOL=0.1
-SFXVOL=0.15
-enable_shadows=True
+if 1:
+    sresH=1280
+    sresV=800
+    fps=75
+    BGMVOL=0.1
+    SFXVOL=0.15
+    enable_shadows=True
 
-
-#CONTROL
-debug=True
-op=0
-kappa=0
-a=0
-distance=0
-main_engine_fps=0
-main_engine_fps_show=0
-main_engine_fps_clock=pygame.time.get_ticks()
-clock=pygame.time.get_ticks()
-enemy_ships=[]
-
-
-
+#CONTROLE/FLAGS
+if 1:
+    debug=True
+    op=0
+    kappa=0
+    a=0
+    distance=0
+    main_engine_fps=0
+    main_engine_fps_show=0
+    main_engine_fps_clock=pygame.time.get_ticks()
+    clock=pygame.time.get_ticks()
+    enemy_ships=[]
 
 #inicializaões + tela de loading
 if 1:
@@ -109,11 +106,10 @@ if 1:
     #   print('lindao!!!!!!')
 
 #loop principal
-if debug:
-    print('\n\nStarting main loop:')
+print('\n\nStarting main loop:')
 menu.swap('main')
 while 1:
-    #rotinas independentes de troca de menu(executam uma só vez)
+    #rotinas pontuais da troca de menu(executam uma só vez)
     if menu.changed:
         #primeiro finaliza os arquivos do menu anterior
 
@@ -176,12 +172,6 @@ while 1:
             #print('loading file: ' + file)
             aux=pygame.image.load(file).convert_alpha()
             render.objects.append(classes.Object(aux,0,0,0,0))
-
-            file='images/ship/enemies/shadows/1.png'#fundo
-            #print('loading file: ' + file)
-            aux=pygame.image.load(file).convert_alpha()
-            aux=pygame.transform.scale(aux,(100,77))
-            render.objects.append(classes.Object(aux,0,300,0,0))
 
             file='images/menu/menu.png'#fundo
             #print('loading file: ' + file)
@@ -536,14 +526,35 @@ while 1:
                         menu.swap('hangar')
 
         while menu.status=='mission':
+            #le os eventos
             for event in pygame.event.get():
                 if event.type==QUIT:
                     menu.swap('quit')
                 if event.type==KEYDOWN:
                     if event.key==K_p:
                         menu.cursor.diff_mode()
-                    if event.key==K_F1:
+                    elif event.key==K_F1:
                         menu.swap('hangar')
+                    elif event.key==K_BACKQUOTE:
+                        render.player.switch_weapon(weapon_object_number,0)
+                    elif event.key==K_1:
+                        render.player.switch_weapon(weapon_object_number,1)
+                    elif event.key==K_2:
+                        render.player.switch_weapon(weapon_object_number,2)
+                    elif event.key==K_3:
+                        render.player.switch_weapon(weapon_object_number,3)
+                    elif event.key==K_4:
+                        render.player.switch_weapon(weapon_object_number,4)
+                    elif event.key==K_5:
+                        render.player.switch_weapon(weapon_object_number,5)
+                    elif event.key==K_6:
+                        render.player.switch_weapon(weapon_object_number,6)
+                    elif event.key==K_7:
+                        render.player.switch_weapon(weapon_object_number,7)
+                    elif event.key==K_8:
+                        render.player.switch_weapon(weapon_object_number,8)
+                    elif event.key==K_9:
+                        render.player.switch_weapon(weapon_object_number,9)
 
             # atualiza o menu
             menu.update(renderer)
@@ -571,9 +582,6 @@ while 1:
                         next_ship+=1
                         if next_ship==total_ships:
                             wave_over=True
-
-
-
 
                 elif wave_over:
                     if len(render.enemy_ships)==0:
@@ -627,11 +635,11 @@ while 1:
                         render.player.take_damage(i.hp//100,i.rect.centerx)
                         i.take_damage(render.player)
 
-
-
             #atira se tiver com wm1 apertado
             if menu.cursor.buttons[0]:
-                render.player.fire()
+                a=render.player.fire()
+                if a!=None:
+                    menu.player.money+=a
                 was_firing=True
             elif was_firing:
                 render.player.unfire()
@@ -642,16 +650,15 @@ while 1:
                 if menu.cursor.buttons[2]:
                     render.player.switch_weapon(weapon_object_number)
                 clicked_wm2=True
-
             if clicked_wm2:
                 if not menu.cursor.buttons[2]:
                     clicked_wm2=False
 
-
+            #faz naves inimiags atirarem
             for i in render.enemy_ships:
                 i.fire()
 
-
+            #conta fps
             main_engine_fps+=1
             if pygame.time.get_ticks()-main_engine_fps_clock >=1000:
                 main_engine_fps_clock=pygame.time.get_ticks()
@@ -674,7 +681,8 @@ while 1:
                                             +'  Enemy:'+str(next_ship)+'/'+str(total_ships)\
                                             +'  MainFPS:'+str(main_engine_fps_show)\
                                             +'  RenderFPS:'+str(renderer.fps_show)\
-                                            +'  fTime: '+str(renderer.frametime)+'ms',colors.WHITE)
+                                            +'  fTime: '+str(renderer.frametime)+'ms'\
+                                            +'  ActiveWpN: '+str(render.player.active_weapon),colors.WHITE)
 
 
 
