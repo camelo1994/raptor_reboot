@@ -14,6 +14,7 @@ shield_UI=[]#$-sao as barras laterais
 hp_UI=[]#$-barra lateral
 enemy_ships=[]#sao as naves inimgas e elas se blitam
 shadows=[]
+static_objects=[]
 
 
 background=None
@@ -90,6 +91,7 @@ class render_thread_class(threading.Thread):
         self.run_flag=True
         self.show_cursor=True
         self.show_player=False
+        self.show_static_objects=False
         self.blit_flags=Blit()
         self.background=False
         self.enable_shadows=enable_shadows
@@ -115,6 +117,8 @@ class render_thread_class(threading.Thread):
         shield_UI=[]
         hp_UI=[]
         enemy_ships=[]
+        static_objects=[]
+        self.show_static_objects=False
 
     def print(self,str):
         print(Fore.GREEN+'[RENDER] '+Fore.RESET+str)
@@ -165,6 +169,9 @@ class render_thread_class(threading.Thread):
                 #printa textos
                 for i in texts:
                     self.screen.blit(i.text,i.rect)
+                if self.show_static_objects:
+                    for i in static_objects:
+                        self.screen.blit(i.image,i.rect)
 
                 # printa o player - tem seu proprio blit()
                 if self.show_player:

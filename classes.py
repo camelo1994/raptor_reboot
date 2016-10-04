@@ -122,7 +122,7 @@ def start_sprite_dict():
             spritelist.append((aux,50))
             sprites_dict['ship_shield']=pyganim.PygAnimation(spritelist)
 
-    # hit do tiro de laser
+    # hit do tiro de laser turret
     if 1:
         name='laser_turret_hit'
         w=80
@@ -135,6 +135,8 @@ def start_sprite_dict():
             spritelist.append((aux,t))
             aux=pyganim.PygAnimation(spritelist)
             sprites_dict[name]=sprite_data(aux,w,h)
+
+
 
 
 def start_audio_dict():
@@ -196,13 +198,12 @@ def start_audio_dict():
 
     # barulho do twin laser
     if 1:
-        name='laser_turret_fire'
-        vol=1
+        name='twin_laser_fire'
+        vol=0.6
         aux='sounds/weapons/'+name+'.ogg'
         aux=pygame.mixer.Sound(aux)
         aux.set_volume(SFXVOL*vol)
         audio_dict[name]=aux
-
 
 
 def start_enemy_dict():
@@ -956,11 +957,11 @@ class Machine_gun(Weapon):
                                friendly=True,origin=self.name+'R'))
             if b>5:
                 render.projectiles.append(
-                    Projectile(self.projectile_image_inv,pos[0]-20,pos[1],0,self.projectile_speedV,damage=self.damage,
+                    Projectile(self.projectile_image_inv,pos[0]-22,pos[1],0,self.projectile_speedV,damage=self.damage,
                                friendly=True,origin=self.name+'L'))
             else:
                 render.projectiles.append(
-                    Projectile(self.projectile_image,pos[0]-20,pos[1],0,self.projectile_speedV,damage=self.damage,
+                    Projectile(self.projectile_image,pos[0]-22,pos[1],0,self.projectile_speedV,damage=self.damage,
                                friendly=True,origin=self.name+'L'))
 
             # toca barulinho
@@ -1025,6 +1026,7 @@ class Laser_turret(Weapon):
     def fire(self,pos):
         if self.shot:
             if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
+                self.clock2=pygame.time.get_ticks()
                 self.reset_line()
                 self.shot=False
 
@@ -1055,62 +1057,109 @@ class Laser_turret(Weapon):
 class Twin_Laser(Weapon):
     def define_projectile(self):
         self.cooldown=self.data[3]
-        self.cooldown2=100
+        self.cooldown2=(self.cooldown/4)-2
         self.target=None
         self.clock2=pygame.time.get_ticks()
         self.shot=False
+        self.current_frame=0
         self.proj=pseudo_Projectile(self.data[2],'Twin Laser')
         self.stringName='CAL-10 "Eclipse" Twin Lasers'
 
-        if 1:
-            self.TWIN_LASER_1CENTER=(80,172,255)
-            self.TWIN_LASER_1CENTER2=(221,233,244)
 
-            self.TWIN_LASER_2CENTER=(79,170,253)
-            self.TWIN_LASER_2CENTER2=(221,233,244)
-
-            self.TWIN_LASER_3CENTER=(71,150,236)
-            self.TWIN_LASER_3CENTER2=(81,171,255)
-
-            self.TWIN_LASER_4CENTER=(44,87,168)
-            self.TWIN_LASER_4CENTER2=(56,111,192)
+        #carrega as bubbles dos tiros
+        self.w=32
+        self.h=36
+        self.imagelist=[]
+        n=4
+        k=0
+        for i in range(n):
+            aux='sprites/twin_laser/'+str(i)+'.png'
+            self.imagelist.append(pygame.image.load(aux))
+            self.imagelist[k].convert_alpha()
+            k+=1
 
     def enter_battle(self,n):
+        #parametros a serem passados pela ship, asim que entrar na bvatalha
         self.line_n=n
+        self.bubbles_n=len(render.static_objects)
+        render.static_objects.append(Object(self.imagelist[self.current_frame],-50,-50,0,0))
+        render.static_objects.append(Object(self.imagelist[self.current_frame],-50,-50,0,0))
+
+    def set_bubbles(self,center,frame_number):
+        a=abs(render.player.x)
+        if a<5:
+            self.offset=28
+        elif a<12:
+            self.offset=20
+        else:
+            self.offset=15
+        render.static_objects[self.bubbles_n].rect.center=(center[0]-self.offset,center[1]+10)
+        render.static_objects[self.bubbles_n].image=self.imagelist[frame_number]
+        render.static_objects[self.bubbles_n+1].rect.center=(center[0]+self.offset,center[1]+10)
+        render.static_objects[self.bubbles_n+1].image=self.imagelist[frame_number]
 
     def activate(self):
-        render.lines[self.line_n].color=colors.RED
-        render.lines[self.line_n].width=4
-        render.lines[self.line_n+1].color=colors.YELLOW
-        render.lines[self.line_n+1].width=1
+        # executa quando a arma é selecionada
+        # fora-fora-dentro-dentro -> devido a ordem de plotagem
+        render.lines[self.line_n].color=colors.TWIN_LASER_OUTER[0]
+        render.lines[self.line_n].width=16
+        render.lines[self.line_n+1].color=colors.TWIN_LASER_OUTER[0]
+        render.lines[self.line_n+1].width=16
+
+        render.lines[self.line_n+2].color=colors.TWIN_LASER_INNER[0]
+        render.lines[self.line_n+2].width=8
+        render.lines[self.line_n+3].color=colors.TWIN_LASER_INNER[0]
+        render.lines[self.line_n+3].width=8
+
+    def update_line_color(self):
+        render.lines[self.line_n].color=colors.TWIN_LASER_OUTER[self.current_frame]
+        render.lines[self.line_n+1].color=colors.TWIN_LASER_OUTER[self.current_frame]
+        render.lines[self.line_n+2].color=colors.TWIN_LASER_INNER[self.current_frame]
+        render.lines[self.line_n+3].color=colors.TWIN_LASER_INNER[self.current_frame]
+
+    def set_line(self,pos,lenA,lenB):
+        render.lines[self.line_n].start=(pos[0]-self.offset-1,pos[1]+10)
+        render.lines[self.line_n].end=(pos[0]-self.offset-1,pos[1]-5-lenA)
+        render.lines[self.line_n+2].start=(pos[0]-self.offset-1,pos[1]+10)
+        render.lines[self.line_n+2].end=(pos[0]-self.offset-1,pos[1]-5-lenA)
+        render.lines[self.line_n+1].start=(pos[0]+self.offset-1,pos[1]+10)
+        render.lines[self.line_n+1].end=(pos[0]+self.offset-1,pos[1]-5-lenB)
+        render.lines[self.line_n+3].start=(pos[0]+self.offset-1,pos[1]+10)
+        render.lines[self.line_n+3].end=(pos[0]+self.offset-1,pos[1]-5-lenB)
 
     def move(self,center):
-        pass
-
-
-    def set_line(self,start,end):
-        render.lines[self.line_n].start=start
-        render.lines[self.line_n].end=end
-        render.lines[self.line_n+1].start=start
-        render.lines[self.line_n+1].end=end
-
-    def reset_line(self):
-        render.lines[self.line_n].start=(0,0)
-        render.lines[self.line_n].end=(0,0)
-        render.lines[self.line_n+1].start=(0,0)
-        render.lines[self.line_n+1].end=(0,0)
+        if self.shot:
+            self.set_bubbles(center,self.current_frame)
+            self.set_line(center,400,400)
+        else:
+            self.set_bubbles((-100,-100),0)
+            self.set_line((-100,-100),0,0)
 
     def fire(self,pos):
         if self.shot:
             if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
-                self.shot=False
+                self.clock2=pygame.time.get_ticks()
+                self.current_frame+=1
+                self.update_line_color()
+                if self.current_frame==3:
+                    self.shot=False
 
-        if pygame.time.get_ticks()-self.clock>=self.cooldown:
+        elif pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
-            play_sound('laser_turret_fire')
+            play_sound('twin_laser_fire')
+            self.current_frame=0
+            self.update_line_color()
+            self.shot=True
+            self.move(pos)
 
     def unfire(self):
-        self.reset_line()
+        if self.shot:
+            if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
+                self.clock2=pygame.time.get_ticks()
+                self.current_frame+=1
+                self.update_line_color()
+                if self.current_frame==3:
+                    self.shot=False
 
 
 # WEAPONS INIMIGAS
@@ -1189,7 +1238,9 @@ class Energy_module:
         if self.current_hp<0:
             self.current_hp=0
 
-
+#######################################
+######### SHIP DO PLAYER ##############
+#######################################
 class Ship:
     def __init__(self,index):
         global items_db_cursor,data_db_cursor
@@ -1218,6 +1269,7 @@ class Ship:
         self.direction=None
         self.last_jet=0
         self.jet_status=False
+        self.x=0
 
         # lista com 5 images de inclina??o 0->4
         if 1:
@@ -1336,48 +1388,48 @@ class Ship:
         render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
 
     def move(self,p):
-        x=p[0]-self.rect.centerx
+        self.x=p[0]-self.rect.centerx
         y=p[1]-self.rect.centery
         if pygame.time.get_ticks()-self.movetime>=25:
             self.movetime=pygame.time.get_ticks()
 
             # anda a nave
-            self.rect.move_ip(x,y)
+            self.rect.move_ip(self.x,y)
 
 
             # anda a arma se necessário
             if self.active_weapon in [9]:
-                self.weapon_magazine[self.active_weapon.move(self.rect.center)]
+                self.weapon_magazine[self.active_weapon].move(self.rect.center)
 
             if enable_shadows:
                 render.player_shadow.rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
                 render.player_shadow.rect.centery=interpolate(self.rect.centery,40,760,-80,880)
 
             # anda os jatinhos
-            render.sprays[0].rect.move_ip(x,y)
-            render.sprays[1].rect.move_ip(x,y)
+            render.sprays[0].rect.move_ip(self.x,y)
+            render.sprays[1].rect.move_ip(self.x,y)
 
             # acerta graficos da nave
-            if self.direction==None or (self.direction==True and x<0) or (
-                            self.direction==False and x>0) or pygame.time.get_ticks()-self.keep_pos>=500:
+            if self.direction==None or (self.direction==True and self.x<0) or (
+                            self.direction==False and self.x>0) or pygame.time.get_ticks()-self.keep_pos>=500:
                 self.keep_pos=pygame.time.get_ticks()
 
-                # inclina??o
-                if x<-9:
+                # inclinação
+                if self.x<-9:
                     self.image=self.images[0]
                     if enable_shadows:
                         render.player_shadow.image=self.shadow_images[0]
                     self.direction=False
                     render.sprays[0].rect.right=self.rect.centerx+2
                     render.sprays[1].rect.left=self.rect.centerx-2
-                elif x<-5:
+                elif self.x<-5:
                     self.image=self.images[1]
                     if enable_shadows:
                         render.player_shadow.image=self.shadow_images[1]
                     self.direction=False
                     render.sprays[0].rect.right=self.rect.centerx-2
                     render.sprays[1].rect.left=self.rect.centerx+2
-                elif x<5:
+                elif self.x<5:
                     if self.direction!=None:
                         self.image=self.images[2]
                         if enable_shadows:
@@ -1385,7 +1437,7 @@ class Ship:
                         self.direction=None
                         render.sprays[0].rect.right=self.rect.centerx-5
                         render.sprays[1].rect.left=self.rect.centerx+5
-                elif x<12:
+                elif self.x<12:
                     self.image=self.images[3]
                     if enable_shadows:
                         render.player_shadow.image=self.shadow_images[3]

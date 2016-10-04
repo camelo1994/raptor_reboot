@@ -142,6 +142,7 @@ while 1:
             renderer.show_cursor=True
             renderer.show_player=False
             renderer.background=False
+            renderer.show_static_objects=False
             enemy_ships=[]
             distance=0
             if menu.next_status=='hangar':
@@ -347,6 +348,7 @@ while 1:
             wave_over=False
             last_ship_killed_time=-1
             renderer.clear_control()
+            renderer.show_static_objects=True
 
 
             #inits basicos
@@ -640,10 +642,10 @@ while 1:
                 a=render.player.fire()
                 if a!=None:
                     menu.player.money+=a
-                was_firing=True
-            elif was_firing:
-                render.player.unfire()
-                was_firing=False
+            else:
+                a=render.player.unfire()
+                if a!=None:
+                    menu.player.money+=a
 
             #troca de arma se APERTOU wm2
             if not clicked_wm2:
