@@ -849,7 +849,7 @@ class Animation:
 #######################################
 ############ WEAPONS ##################
 #######################################
-# CLASSA MAE
+# CLASSE MÃE
 class Weapon:
     def __init__(self,name):
         global items_db_cursor
@@ -1060,7 +1060,11 @@ class Twin_Laser(Weapon):
         self.cooldown2=(self.cooldown/4)-2
         self.target=None
         self.clock2=pygame.time.get_ticks()
+        self.origin='twin_laser'
         self.shot=False
+        self.offset=28
+        self.list=[]
+        self.tgt_list=[]
         self.current_frame=0
         self.proj=pseudo_Projectile(self.data[2],'Twin Laser')
         self.stringName='CAL-10 "Eclipse" Twin Lasers'
@@ -1127,30 +1131,92 @@ class Twin_Laser(Weapon):
         render.lines[self.line_n+3].start=(pos[0]+self.offset-1,pos[1]+10)
         render.lines[self.line_n+3].end=(pos[0]+self.offset-1,pos[1]-5-lenB)
 
-    def move(self,center):
+    def move(self,center,a=None,b=None):
         if self.shot:
             self.set_bubbles(center,self.current_frame)
-            self.set_line(center,400,400)
+            if a==None:
+                a=800
+            if b==None:
+                b=800
+            self.set_line(center,b,a)
         else:
             self.set_bubbles((-100,-100),0)
             self.set_line((-100,-100),0,0)
 
+    def update_tgt_list(self,pos):
+        oo=self.offset+8
+        ool=pos[0]-oo
+        ooli=ool-16
+        oor=pos[0]+oo
+        oori=oor-16
+        flag=False
+
+
+        for i in range(len(render.enemy_ships)):
+            if render.enemy_ships[i].rect.left<oor and render.enemy_ships[i].rect.right>ool:
+                self.list.append((i,render.enemy_ships[i].rect.bottom))
+                flag=True
+        if flag:
+            tgt_L=-1
+            tgt_R=-1
+            chkd=[]
+            while (tgt_L==-1) and (tgt_R==-1):
+                d=0
+                for i in self.list:
+                    if (i[1]>d) and not(i[0] in chkd):
+                        m=i[0]
+
+                    if tgt_L==-1:
+                        if render.enemy_ships[m].rect.right>ool and render.enemy_ships[m].rect.left<ooli:
+                            tgt_L=m
+
+                    if tgt_R==-1:
+                        if render.enemy_ships[m].rect.right>oori and render.enemy_ships[m].rect.left<oor:
+                            tgt_R=m
+
+                    chkd.append(m)
+                print(tgt_L,tgt_R)
+            return tgt_L,tgt_R
+        else:
+            return None,None
+
     def fire(self,pos):
-        if self.shot:
-            if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
-                self.clock2=pygame.time.get_ticks()
-                self.current_frame+=1
+        if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
+            self.clock2=pygame.time.get_ticks()
+            if self.shot:
+                l=0
+                r=0
+                tgtL,tgtR=self.update_tgt_list(pos)
+                if tgtL!=None:
+                    render.enemy_ships[tgtL].take_damage(self)
+                    l=tgtL
+                if tgtR!=None:
+                    render.enemy_ships[tgtL].take_damage(self)
+                    r=tgtR
+                self.move(pos,r,l)
                 self.update_line_color()
+                self.current_frame+=1
                 if self.current_frame==3:
                     self.shot=False
 
-        elif pygame.time.get_ticks()-self.clock>=self.cooldown:
-            self.clock=pygame.time.get_ticks()
-            play_sound('twin_laser_fire')
-            self.current_frame=0
-            self.update_line_color()
-            self.shot=True
-            self.move(pos)
+            elif pygame.time.get_ticks()-self.clock>=self.cooldown:
+                self.clock=pygame.time.get_ticks()
+                play_sound('twin_laser_fire')
+                self.current_frame=0
+                l=0
+                r=0
+                tgtL,tgtR=self.update_tgt_list(pos)
+                print(tgtL,tgtR)
+                if tgtL!=None:
+                    render.enemy_ships[tgtL].take_damage(self)
+                    l=tgtL
+                if tgtR!=None:
+                    render.enemy_ships[tgtL].take_damage(self)
+                    r=tgtR
+                self.update_line_color()
+                self.shot=True
+                self.move(pos,r,l)
+            print(self.current_frame)
 
     def unfire(self):
         if self.shot:
@@ -1613,6 +1679,8 @@ def damage_taken_sprite_selector(source):
     # player
     elif source.origin=='Player':
         return 'medium_explosion'
+    else:
+        print('kappa')
 
 
 #-/> AS SHIPS ESTAO HARDCODED INDIVIDUALMENTE!!!!!!!!!!!!
