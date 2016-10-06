@@ -727,7 +727,7 @@ class Projectile(Object):
             self.friendly=False
 
         self.valid=True
-
+        self.pseudo=False
         self.has_anim=False
         if 'anim' in kwargs:
             self.Animation=kwargs.get('anim')
@@ -754,6 +754,7 @@ class pseudo_Projectile:
     def __init__(self,dmg,origin):
         self.damage=dmg
         self.origin=origin
+        self.pseudo=True
 
 
 class MenuButton(Object):  # (imagefileA,imagefileB,PosH,PosV,mode=None):
@@ -1071,30 +1072,32 @@ class Twin_Laser(Weapon):
 
 
         #carrega as bubbles dos tiros
-        self.w=32
-        self.h=36
-        self.imagelist=[]
-        n=4
-        k=0
-        for i in range(n):
-            aux='sprites/twin_laser/'+str(i)+'.png'
-            self.imagelist.append(pygame.image.load(aux))
-            self.imagelist[k].convert_alpha()
-            k+=1
+        if 1:
+            self.w=32
+            self.h=36
+            self.imagelist=[]
+            n=4
+            k=0
+            for i in range(n):
+                aux='sprites/twin_laser/'+str(i)+'.png'
+                self.imagelist.append(pygame.image.load(aux))
+                self.imagelist[k].convert_alpha()
+                k+=1
 
 
         #bibliotecas de cores
-        self.lineColor_OUTER=[]
-        self.lineColor_OUTER.append((79,172,255))
-        self.lineColor_OUTER.append((79,170,253))
-        self.lineColor_OUTER.append((71,150,236))
-        self.lineColor_OUTER.append((44,87,168))
+        if 1:
+            self.lineColor_OUTER=[]
+            self.lineColor_OUTER.append((79,172,255))
+            self.lineColor_OUTER.append((79,170,253))
+            self.lineColor_OUTER.append((71,150,236))
+            self.lineColor_OUTER.append((44,87,168))
 
-        self.lineColor_INNER=[]
-        self.lineColor_INNER.append((221,220,229))
-        self.lineColor_INNER.append((221,233,244))
-        self.lineColor_INNER.append((81,171,255))
-        self.lineColor_INNER.append((56,111,192))
+            self.lineColor_INNER=[]
+            self.lineColor_INNER.append((221,220,229))
+            self.lineColor_INNER.append((221,233,244))
+            self.lineColor_INNER.append((81,171,255))
+            self.lineColor_INNER.append((56,111,192))
 
 
     def enter_battle(self,n,ship):
@@ -1152,7 +1155,6 @@ class Twin_Laser(Weapon):
         render.lines[self.line_n+3].end=(pos[0]+self.offset-1,pos[1]-5-lenB)
 
     def move(self):
-        print(self.current_frame)
         if self.current_frame>=0:
             self.set_bubbles(self.my_ship.rect.center,self.current_frame)
             self.set_line(self.my_ship.rect.center,self.limitL,self.limitR)
@@ -1199,7 +1201,6 @@ class Twin_Laser(Weapon):
 
     def fire(self,pos):
         self.move()
-
         if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
             self.clock2=pygame.time.get_ticks()
             if self.current_frame>=0:
@@ -1211,9 +1212,8 @@ class Twin_Laser(Weapon):
                     self.update_line_color()
             else:
                 play_sound('twin_laser_fire')
-                self.update_line_color()
                 self.current_frame=0
-
+                self.update_line_color()
 
 
     def unfire(self):
@@ -1335,6 +1335,8 @@ class Ship:
         self.last_jet=0
         self.jet_status=False
         self.x=0
+        self.has_no_weapons=False
+        self.pseudo=True
 
         # lista com 5 images de inclina??o 0->4
         if 1:
@@ -1419,9 +1421,10 @@ class Ship:
                 # sombras
 
     def load_weapons(self):
-        # weapons
         self.weapon_magazine=[]
         self.active_weapon=self.shipdata[5]
+        if self.active_weapon==10:
+            self.has_no_weapons=True
         weapons_to_load=self.shipdata[4]
 
         for i in range(13):
@@ -1431,26 +1434,27 @@ class Ship:
         for i in possibilidades:
             if i in weapons_to_load:
                 self.weapon_magazine[j]=copy(items_dict.get(i))
-                #print(j)
-                #print(self.weapon_magazine[j].name)
             j+=1
 
     def switch_weapon(self,weapon_object_number,op=None):
-        if op==None:
-            self.active_weapon+=1
-            while(self.weapon_magazine[self.active_weapon]==None or self.active_weapon>=10):
-                self.active_weapon+=1
-                if self.active_weapon>=10:
-                    self.active_weapon=0
+        if self.has_no_weapons:
             self.switch_weapon_sound.play()
         else:
-            if self.weapon_magazine[op]!=None:
+            if op==None:
+                self.active_weapon+=1
+                while(self.weapon_magazine[self.active_weapon]==None or self.active_weapon>=10):
+                    self.active_weapon+=1
+                    if self.active_weapon>=10:
+                        self.active_weapon=0
                 self.switch_weapon_sound.play()
-                self.active_weapon=op
+            else:
+                if self.weapon_magazine[op]!=None:
+                    self.switch_weapon_sound.play()
+                    self.active_weapon=op
 
-        #ja troca o iconezinho do render!!
-        self.weapon_magazine[self.active_weapon].activate()
-        render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
+            #ja troca o iconezinho do render!!
+            self.weapon_magazine[self.active_weapon].activate()
+            render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
 
     def move(self,p):
         self.x=p[0]-self.rect.centerx
@@ -1568,10 +1572,12 @@ class Ship:
 
 
         #atira com a ativa
-        return self.weapon_magazine[self.active_weapon].fire(self.rect.center)
+        if self.weapon_magazine[self.active_weapon]!=None:
+            return self.weapon_magazine[self.active_weapon].fire(self.rect.center)
 
     def unfire(self):
-        self.weapon_magazine[self.active_weapon].unfire()
+        if self.weapon_magazine[self.active_weapon]!=None:
+            return self.weapon_magazine[self.active_weapon].unfire()
 
     def enter_battle(self):
         self.print('Entering battle')
@@ -1603,10 +1609,16 @@ class Ship:
         render.lines.append(line((0,0),(0,0),colors.WHITE,1))
         render.lines.append(line((0,0),(0,0),colors.WHITE,1))
 
-        self.weapon_magazine[4].enter_battle(self.line_n)
-        self.weapon_magazine[9].enter_battle(self.line_n,self)
 
-        self.weapon_magazine[self.active_weapon].activate()
+        for i in [4,9]:
+            if self.weapon_magazine[i]!=None:
+                if i==4:
+                    self.weapon_magazine[4].enter_battle(self.line_n)
+                if i==9:
+                    self.weapon_magazine[9].enter_battle(self.line_n,self)
+
+        if self.active_weapon!=10:
+            self.weapon_magazine[self.active_weapon].activate()
 
         self.update_bars()
 
@@ -1801,7 +1813,10 @@ class enemy_ship_0:
 
     def take_damage(self,source):
         self.hp-=source.damage
-        spawn_sprite(self.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
+        if source.pseudo:
+            spawn_sprite(self.rect.centerx,self.rect.centery,damage_taken_sprite_selector(source))
+        else:
+            spawn_sprite(source.rect.centerx,source.rect.centery,damage_taken_sprite_selector(source))
 
         # se morreu...
         if self.hp<=0:  # faz toda a ceniunha

@@ -381,6 +381,7 @@ while 1:
                 renderer.show_player=True
 
                 weapon_object_number=len(render.objects)
+
                 render.objects.append(menu.player.ship.weapon_magazine[menu.player.ship.active_weapon])
 
                 #linhas
