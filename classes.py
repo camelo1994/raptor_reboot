@@ -1082,9 +1082,27 @@ class Twin_Laser(Weapon):
             self.imagelist[k].convert_alpha()
             k+=1
 
-    def enter_battle(self,n):
+
+        #bibliotecas de cores
+        self.lineColor_OUTER=[]
+        self.lineColor_OUTER.append((79,172,255))
+        self.lineColor_OUTER.append((79,170,253))
+        self.lineColor_OUTER.append((71,150,236))
+        self.lineColor_OUTER.append((44,87,168))
+
+        self.lineColor_INNER=[]
+        self.lineColor_INNER.append((221,220,229))
+        self.lineColor_INNER.append((221,233,244))
+        self.lineColor_INNER.append((81,171,255))
+        self.lineColor_INNER.append((56,111,192))
+
+
+    def enter_battle(self,n,ship):
         #parametros a serem passados pela ship, asim que entrar na bvatalha
+        self.limitL=800
+        self.limitR=800
         self.line_n=n
+        self.my_ship=ship
         self.bubbles_n=len(render.static_objects)
         render.static_objects.append(Object(self.imagelist[self.current_frame],-50,-50,0,0))
         render.static_objects.append(Object(self.imagelist[self.current_frame],-50,-50,0,0))
@@ -1105,21 +1123,23 @@ class Twin_Laser(Weapon):
     def activate(self):
         # executa quando a arma é selecionada
         # fora-fora-dentro-dentro -> devido a ordem de plotagem
-        render.lines[self.line_n].color=colors.TWIN_LASER_OUTER[0]
+        render.lines[self.line_n].color=self.lineColor_OUTER[0]
         render.lines[self.line_n].width=16
-        render.lines[self.line_n+1].color=colors.TWIN_LASER_OUTER[0]
+        render.lines[self.line_n+1].color=self.lineColor_OUTER[0]
         render.lines[self.line_n+1].width=16
 
-        render.lines[self.line_n+2].color=colors.TWIN_LASER_INNER[0]
+        render.lines[self.line_n+2].color=self.lineColor_INNER[0]
         render.lines[self.line_n+2].width=8
-        render.lines[self.line_n+3].color=colors.TWIN_LASER_INNER[0]
+        render.lines[self.line_n+3].color=self.lineColor_INNER[0]
         render.lines[self.line_n+3].width=8
 
+        self.current_frame=-1
+
     def update_line_color(self):
-        render.lines[self.line_n].color=colors.TWIN_LASER_OUTER[self.current_frame]
-        render.lines[self.line_n+1].color=colors.TWIN_LASER_OUTER[self.current_frame]
-        render.lines[self.line_n+2].color=colors.TWIN_LASER_INNER[self.current_frame]
-        render.lines[self.line_n+3].color=colors.TWIN_LASER_INNER[self.current_frame]
+        render.lines[self.line_n].color=self.lineColor_OUTER[self.current_frame]
+        render.lines[self.line_n+1].color=self.lineColor_OUTER[self.current_frame]
+        render.lines[self.line_n+2].color=self.lineColor_INNER[self.current_frame]
+        render.lines[self.line_n+3].color=self.lineColor_INNER[self.current_frame]
 
     def set_line(self,pos,lenA,lenB):
         render.lines[self.line_n].start=(pos[0]-self.offset-1,pos[1]+10)
@@ -1131,14 +1151,11 @@ class Twin_Laser(Weapon):
         render.lines[self.line_n+3].start=(pos[0]+self.offset-1,pos[1]+10)
         render.lines[self.line_n+3].end=(pos[0]+self.offset-1,pos[1]-5-lenB)
 
-    def move(self,center,a=None,b=None):
-        if self.shot:
-            self.set_bubbles(center,self.current_frame)
-            if a==None:
-                a=800
-            if b==None:
-                b=800
-            self.set_line(center,b,a)
+    def move(self):
+        print(self.current_frame)
+        if self.current_frame>=0:
+            self.set_bubbles(self.my_ship.rect.center,self.current_frame)
+            self.set_line(self.my_ship.rect.center,self.limitL,self.limitR)
         else:
             self.set_bubbles((-100,-100),0)
             self.set_line((-100,-100),0,0)
@@ -1181,44 +1198,26 @@ class Twin_Laser(Weapon):
             return None,None
 
     def fire(self,pos):
+        self.move()
+
         if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
             self.clock2=pygame.time.get_ticks()
-            if self.shot:
-                l=0
-                r=0
-                tgtL,tgtR=self.update_tgt_list(pos)
-                if tgtL!=None:
-                    render.enemy_ships[tgtL].take_damage(self)
-                    l=tgtL
-                if tgtR!=None:
-                    render.enemy_ships[tgtL].take_damage(self)
-                    r=tgtR
-                self.move(pos,r,l)
-                self.update_line_color()
+            if self.current_frame>=0:
                 self.current_frame+=1
-                if self.current_frame==3:
-                    self.shot=False
 
-            elif pygame.time.get_ticks()-self.clock>=self.cooldown:
-                self.clock=pygame.time.get_ticks()
+                if self.current_frame==4:
+                    self.current_frame=-1
+                else:
+                    self.update_line_color()
+            else:
                 play_sound('twin_laser_fire')
-                self.current_frame=0
-                l=0
-                r=0
-                tgtL,tgtR=self.update_tgt_list(pos)
-                print(tgtL,tgtR)
-                if tgtL!=None:
-                    render.enemy_ships[tgtL].take_damage(self)
-                    l=tgtL
-                if tgtR!=None:
-                    render.enemy_ships[tgtL].take_damage(self)
-                    r=tgtR
                 self.update_line_color()
-                self.shot=True
-                self.move(pos,r,l)
-            print(self.current_frame)
+                self.current_frame=0
+
+
 
     def unfire(self):
+        self.move()
         if self.shot:
             if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
                 self.clock2=pygame.time.get_ticks()
@@ -1464,8 +1463,8 @@ class Ship:
 
 
             # anda a arma se necessário
-            if self.active_weapon in [9]:
-                self.weapon_magazine[self.active_weapon].move(self.rect.center)
+            #if self.active_weapon in [9]:
+            #    self.weapon_magazine[self.active_weapon].move(self.rect.center)
 
             if enable_shadows:
                 render.player_shadow.rect.centerx=interpolate(self.rect.centerx,34,1246,-100,1380)
@@ -1604,9 +1603,8 @@ class Ship:
         render.lines.append(line((0,0),(0,0),colors.WHITE,1))
         render.lines.append(line((0,0),(0,0),colors.WHITE,1))
 
-        for i in [4,9]:#<---- aqui tem q ter todos is indices de armas que  precisam de pre-inicialização
-            if self.weapon_magazine[i]!=None:
-                self.weapon_magazine[i].enter_battle(self.line_n)
+        self.weapon_magazine[4].enter_battle(self.line_n)
+        self.weapon_magazine[9].enter_battle(self.line_n,self)
 
         self.weapon_magazine[self.active_weapon].activate()
 
