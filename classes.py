@@ -136,7 +136,19 @@ def start_sprite_dict():
             aux=pyganim.PygAnimation(spritelist)
             sprites_dict[name]=sprite_data(aux,w,h)
 
-
+    # hit do twin laser
+    if 1:
+        name='twin_laser_hitmark'
+        w=60
+        h=60
+        t=65
+        n=1
+        spritelist=[]
+        for i in range(n):
+            aux='sprites/'+name+'/'+str(i)+'.png'
+            spritelist.append((aux,t))
+            aux=pyganim.PygAnimation(spritelist)
+            sprites_dict[name]=sprite_data(aux,w,h)
 
 
 def start_audio_dict():
@@ -263,7 +275,10 @@ def spawn_sprite(x,y,key,dx=0,dy=0):
         render.sprites.append(Animation(aux.Animation,anim_rect(x,y,dx,dy,aux.w,aux.h)))
         render.sprites[n].animation.play()
     else:
-        if key==None:
+        print(key)
+        if key=='null':
+            a=1
+        elif key==None:
             print('No key was provided')
         else:
             print(key+' was not found on the sprites dictionary!')
@@ -917,6 +932,8 @@ class AA_missle(Weapon):
             # toca barulinho
             sound_engine.mixer.channel[4].play(self.fire_sound)
 
+        return None,None,self
+
     def unfire(self):
         pass
 
@@ -980,6 +997,8 @@ class Laser_turret(Weapon):
         self.cooldown=self.data[3]
         self.cooldown2=32
         self.target=None
+        self.pseudo=True
+        self.origin='Laser Turret'
         self.clock2=pygame.time.get_ticks()
         self.shot=False
         self.proj=pseudo_Projectile(self.data[2],'Laser Turret')
@@ -997,13 +1016,15 @@ class Laser_turret(Weapon):
 
     def acquire_target(self,pos):
         if len(render.enemy_ships)>0:
+            self.target=None
             k=0
             d=0
             for i in render.enemy_ships:
                 dist=get_distance(i.rect.center,pos)
-                if dist<d or d==0:
-                    d=dist
-                    self.target=k
+                if (dist<d or d==0):
+                    if i.rect.centerx>0 and i.rect.top>0 and i.rect.centerx<sresH and i.rect.centery<sresV:
+                        d=dist
+                        self.target=k
                 k+=1
         else:
             self.target=None
@@ -1034,19 +1055,17 @@ class Laser_turret(Weapon):
         if pygame.time.get_ticks()-self.clock>=self.cooldown:
             self.clock=pygame.time.get_ticks()
             self.acquire_target(pos)
-            val=None
             if self.target!=None:
                 if check_if_on_screen(render.enemy_ships[self.target].rect):
                     play_sound('laser_turret_fire')
-                    if render.enemy_ships[self.target].take_damage(self.proj):
-                        val=render.enemy_ships[self.target].value
                     self.set_line(pos,render.enemy_ships[self.target].rect.center)
                     self.shot=True
                     self.clock2=pygame.time.get_ticks()
             else:
                 play_sound('laser_turret_prefire')
 
-            return val
+            return self.target,None,self
+        return None,None,self
 
     def unfire(self):
         self.reset_line()
@@ -1061,7 +1080,7 @@ class Twin_Laser(Weapon):
         self.cooldown2=(self.cooldown/4)-2
         self.target=None
         self.clock2=pygame.time.get_ticks()
-        self.origin='twin_laser'
+        self.origin='Twin Laser'
         self.shot=False
         self.offset=28
         self.list=[]
@@ -1099,11 +1118,16 @@ class Twin_Laser(Weapon):
             self.lineColor_INNER.append((81,171,255))
             self.lineColor_INNER.append((56,111,192))
 
-
     def enter_battle(self,n,ship):
         #parametros a serem passados pela ship, asim que entrar na bvatalha
+        self.origin='twin_laser'
         self.limitL=800
         self.limitR=800
+        self.dr=-1
+        self.dl=-1
+        self.hitl=None
+        self.hitr=None
+        self.pseudo=True
         self.line_n=n
         self.my_ship=ship
         self.bubbles_n=len(render.static_objects)
@@ -1157,7 +1181,9 @@ class Twin_Laser(Weapon):
     def move(self):
         if self.current_frame>=0:
             self.set_bubbles(self.my_ship.rect.center,self.current_frame)
+            #colocar aqui os limites e se estiver hitando alguem devolver a informação
             self.set_line(self.my_ship.rect.center,self.limitL,self.limitR)
+
         else:
             self.set_bubbles((-100,-100),0)
             self.set_line((-100,-100),0,0)
@@ -1201,8 +1227,47 @@ class Twin_Laser(Weapon):
 
     def fire(self,pos):
         self.move()
+        self.hitl=None
+        self.hitr=None
         if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
             self.clock2=pygame.time.get_ticks()
+
+            #verifica inimigos
+            if self.current_frame!=-1:
+                self.dl=-1
+                self.dr=-1
+                self.cr=None
+                self.cl=None
+
+                k=0
+                for i in render.enemy_ships:
+                    #se estiver dentro dos raio
+                    if i.rect.left<self.my_ship.rect.right and i.rect.right>self.my_ship.rect.left:
+                        #se tive na frente do raio esquerdo
+                        if i.rect.right>self.my_ship.rect.left and i.rect.left<self.my_ship.rect.left+16:
+                            if i.rect.bottom>self.dl:
+                                self.dl=i.rect.bottom
+                                self.cl=i.rect.centery
+                                self.hitl=k
+                        #se tiver na frente do raio direito
+                        if i.rect.right>self.my_ship.rect.right-16 and i.rect.left<self.my_ship.rect.right:
+                            if i.rect.bottom>self.dr:
+                                self.dr=i.rect.bottom
+                                self.cr=i.rect.centery
+                                self.hitr=k
+                k+=1
+            if self.dl==-1:
+                self.limitL=800
+            else:
+                self.limitL=self.my_ship.rect.centery-self.cl
+                spawn_sprite(self.my_ship.rect.left,self.cl,'twin_laser_hitmark')
+
+            if self.dr==-1:
+                self.limitR=800
+            else:
+                self.limitR=self.my_ship.rect.centery-self.cr
+                spawn_sprite(self.my_ship.rect.right,self.cr,'twin_laser_hitmark')
+
             if self.current_frame>=0:
                 self.current_frame+=1
 
@@ -1215,16 +1280,19 @@ class Twin_Laser(Weapon):
                 self.current_frame=0
                 self.update_line_color()
 
+        return self.hitl,self.hitr,self
 
     def unfire(self):
         self.move()
-        if self.shot:
-            if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
-                self.clock2=pygame.time.get_ticks()
+        if pygame.time.get_ticks()-self.clock2>=self.cooldown2:
+            self.clock2=pygame.time.get_ticks()
+            if self.current_frame>=0:
                 self.current_frame+=1
-                self.update_line_color()
-                if self.current_frame==3:
-                    self.shot=False
+
+                if self.current_frame==4:
+                    self.current_frame=-1
+                else:
+                    self.update_line_color()
 
 
 # WEAPONS INIMIGAS
@@ -1689,9 +1757,10 @@ def damage_taken_sprite_selector(source):
     # player
     elif source.origin=='Player':
         return 'medium_explosion'
+    elif source.origin=='Twin Laser':
+        return 'null'
     else:
-        print('kappa')
-
+        return 'null'
 
 #-/> AS SHIPS ESTAO HARDCODED INDIVIDUALMENTE!!!!!!!!!!!!
 class enemy_ship_0:

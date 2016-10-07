@@ -640,13 +640,20 @@ while 1:
 
             #atira se tiver com wm1 apertado
             if menu.cursor.buttons[0]:
-                a=render.player.fire()
+                a,b,src=render.player.fire()
+                #print('a'+str(a))
+                #print('b'+str(b))
                 if a!=None:
-                    menu.player.money+=a
+                    if render.enemy_ships[a].take_damage(src):
+                        menu.player.money+=render.enemy_ships[a].value
+                        if a==b:
+                            b=None
+                if b!=None:
+                    if render.enemy_ships[b].take_damage(src):
+                        menu.player.money+=render.enemy_ships[b].value
             else:
-                a=render.player.unfire()
-                if a!=None:
-                    menu.player.money+=a
+                render.player.unfire()
+
 
             #troca de arma se APERTOU wm2
             if not clicked_wm2:
