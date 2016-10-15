@@ -98,6 +98,9 @@ if 1:
                       bgm_file2,button_sound_file,button_select_file)
     renderer.clear_control()
 
+
+
+
     # aqui tem que ter uma tela se for a primeira vez
 
     #if menu.lastplayer == -1:
@@ -319,10 +322,136 @@ while 1:
             renderer.clear_control()
 
             #objetos
-            file='dev_menu/supply_room/supply room.png'#background
-            #print('loading file: ' + file)
-            aux=pygame.image.load(file).convert_alpha()
-            render.objects.append(classes.Object(aux,0,0,0,0))
+            if 1:
+                file='images/supply_room/background.png'#background
+                aux=pygame.image.load(file).convert_alpha()
+                render.objects.append(classes.Object(aux,0,0,0,0))
+
+                file='images/supply_room/ledG.png'  # background
+                aux=pygame.image.load(file).convert_alpha()
+                render.objects.append(classes.Object(aux,230,625,0,0,'centered'))
+
+                file='images/supply_room/ledR.png'  # background
+                aux=pygame.image.load(file).convert_alpha()
+                render.objects.append(classes.Object(aux,250,625,0,0,'centered'))
+
+                #foto do pleie
+                aux=menu.player.image
+                aux=classes.Object(aux,105,290,0,0)
+                render.objects.append(aux)
+
+                # foto dotem pleie
+                item_picture_id=len(render.objects)
+                aux=classes.shop_magazine[0].image
+                aux=classes.Object(aux,520,165,0,0)
+                render.objects.append(aux)
+
+            #butoes
+            if 1:
+                #exit(invisivel)#0
+                patha='images/supply_room/exit_btn.png'
+                pathb='images/supply_room/exit_btn.png'
+                render.buttons.append(classes.MenuButton(patha,pathb,0,670,'abs'))
+
+                # select buy#1
+                buy_btn_index=len(render.buttons)
+                patha='images/supply_room/buy_ON.png'
+                pathb='images/supply_room/buy_ON.png'
+                render.buttons.append(classes.MenuButton(patha,pathb,467,643,'abs'))
+
+                # sel sell#2
+                sell_btn_index=len(render.buttons)
+                patha='images/supply_room/sell_OFF.png'
+                pathb='images/supply_room/sell_OFF.png'
+                render.buttons.append(classes.MenuButton(patha,pathb,560,643,'abs'))
+
+                # acao#3
+                patha='images/supply_room/BUY_SELL_BTN.png'
+                pathb='images/supply_room/BUY_SELL_BTN.png'
+                render.buttons.append(classes.MenuButton(patha,pathb,706,620,'abs'))
+
+                # crusor esq#4
+                patha='images/supply_room/sel_LEFT.png'
+                pathb='images/supply_room/sel_LEFT.png'
+                render.buttons.append(classes.MenuButton(patha,pathb,976,639,'abs'))
+
+                # cursordir#5
+                patha='images/supply_room/sel_RIGHT.png'
+                pathb='images/supply_room/sel_RIGHT.png'
+                render.buttons.append(classes.MenuButton(patha,pathb,1087,639,'abs'))
+
+            # textos
+            player_money_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='$'+str(menu.player.money)
+            render.texts.append(classes.text(txt,filepath,32,colors.GRAY_MENU,185,580,0))  # dinhero
+
+            buy_sell_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='BUY'
+            render.texts.append(classes.text(txt,filepath,48,colors.GREEN_SUP_ROOM,798,666,0))  # botao sell/buy
+
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='YOU HAVE'
+            render.texts.append(classes.text(txt,filepath,30,colors.GREEN_MENU,512,500,1))
+
+            cost_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='COST'
+            render.texts.append(classes.text(txt,filepath,30,colors.GREEN_MENU,900,500,1))
+
+            # textos de descrição
+
+            #name
+            name_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='NOME'
+            render.texts.append(classes.text(txt,filepath,30,colors.YELLOW_MENU,720,170,1))
+
+            #function
+            function_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='KAPPA'
+            render.texts.append(classes.text(txt,filepath,28,colors.RED_MENU,720,210,1))
+
+            # cost
+            value_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='2134'
+            render.texts.append(classes.text(txt,filepath,36,colors.GRAY_MENU,980,556,0))
+
+            # have or not
+            have_text_id=len(render.texts)
+            filepath='fonts/AndikaNewBasic-R.ttf'
+            txt='yes'
+            render.texts.append(classes.text(txt,filepath,36,colors.GRAY_MENU,610,556,0))
+
+
+
+            #description
+            shop_texts_id=[]
+            k=0
+            for i in range(6):
+                shop_texts_id.append(len(render.texts))
+                filepath='fonts/AndikaNewBasic-R.ttf'
+                txt=classes.shop_description_lines[0][i]
+                render.texts.append(classes.text(txt,filepath,30,colors.RED,512,280+k,1))
+                k+=32
+
+
+
+            #audio
+            aux='sounds/ship/change_weapon.ogg'
+            action_sound=pygame.mixer.Sound(aux)
+            action_sound.set_volume(SFXVOL*0.9)
+
+            #variaveis de controle
+            if 1:
+                mode='buy'
+                cursor=0
+                display=classes.Display(player_money_text_id,item_picture_id,name_text_id,function_text_id,\
+                                        shop_texts_id,have_text_id,cost_text_id,value_text_id,buy_sell_text_id)
+
         if menu.next_status=='ship':
             print('Generating ship menu...')
             renderer.clear_control()
@@ -509,14 +638,47 @@ while 1:
                         menu.swap('hangar')
 
             #atualiza o menu
-            menu.update(renderer)
+            a=menu.update(renderer)
+            if a!=None:
+                a=a[1:]
+                if a=='main':
+                    menu.swap('hangar')
+                else:
+                    action_sound.play()
+                    if a=='+':
+                        mode='buy'
+                        render.buttons[buy_btn_index].update_image('images/supply_room/buy_ON.png')
+                        render.buttons[sell_btn_index].update_image('images/supply_room/sell_OFF.png')
+                        render.texts[buy_sell_text_id].update_text('BUY')
+                    elif a=='-':
+                        mode='sell'
+                        render.buttons[buy_btn_index].update_image('images/supply_room/buy_OFF.png')
+                        render.buttons[sell_btn_index].update_image('images/supply_room/sell_ON.png')
+                        render.texts[buy_sell_text_id].update_text('SELL')
+                    elif a=='ok':
+                        print('ação!')
+
+                    elif a=='l':
+                        if cursor==0:
+                            cursor=15
+                        else:
+                            cursor-=1
+                        display.update(menu.player.money,cursor,2,False)
+                    elif a=='r':
+                        if cursor==15:
+                            cursor=0
+                        else:
+                            cursor+=1
+                        display.update(menu.player.money,cursor,2,False)
 
             #debug_text
             renderer.debug_text.update_text('Mouse: X,Y('+str(menu.cursor.posX)\
                                             +','+str(menu.cursor.posY)+')'\
                                             +' dX,dY('+str(menu.cursor.posdX)\
                                             +','+str(menu.cursor.posdY)+')'\
-                                            +'m1,m2,m3'+str(menu.cursor.buttons),colors.BLACK)
+                                            +'m1,m2,m3'+str(menu.cursor.buttons)\
+                                            +'op('+str(menu.op)+')' \
+                                            +'cursor('+str(cursor)+')',colors.BLACK)
 
         while menu.status=='ship':
             for event in pygame.event.get():
@@ -697,4 +859,6 @@ while 1:
 
 
 
-
+#########################################
+########### FUNÇOES AUXILIARES ##########
+#########################################

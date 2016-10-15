@@ -9,6 +9,8 @@ data_db=None
 data_db_cursor=None
 items_db=None
 items_db_cursor=None
+shop_magazine=[]
+shop_description_lines=[]
 sprites_dict={}
 audio_dict={}
 enemy_dict={}
@@ -37,6 +39,7 @@ def init(a,b):
     start_audio_dict()
     start_enemy_dict()
     start_items_dict()
+    start_shop_magazine()
 
 
 class sprite_data:
@@ -141,7 +144,7 @@ def start_sprite_dict():
         name='twin_laser_hitmark'
         w=60
         h=60
-        t=65
+        t=60
         n=1
         spritelist=[]
         for i in range(n):
@@ -264,6 +267,207 @@ def start_items_dict():
     real_name='Twin Laser'
     aux=Twin_Laser(real_name)
     items_dict[name]=aux
+
+
+def start_shop_magazine():
+    print('Starting shop magazine...')
+    #0
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('REPLENISHES NORMAL SHIELDS. THE')
+        aux.append('LIFEBLOOD OF ALL PILOTS, THIS')
+        aux.append('LITTLE PACKAGE IS USUALLY THE')
+        aux.append('FRIST THING ON ALL PILOTS WISH')
+        aux.append('LISTS')
+        aux.append('SOLD IN 25 UNIT INCREMENTS ONLY!')
+        shop_description_lines.append(aux)
+
+    #1
+    shop_magazine.append(Shield('Phase Shield',100))
+    if 1:
+        aux=[]
+        aux.append('THE SA17 ARES IS AN ENHANCEMENT')
+        aux.append('FOR NORMAL SHIELDS. THE ARES')
+        aux.append('RAISES A ENERGY FIELD AROUND THE')
+        aux.append('FIGHTER, WHICH WILL ABSORB ENEMY')
+        aux.append('FIRE UNTIL ITS POWER SUPPLY ')
+        aux.append('IS DEPLETED')
+        shop_description_lines.append(aux)
+
+    #2
+    shop_magazine.append(Mega_Bomb('Mega Bomb'))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #3
+    shop_magazine.append(Machine_gun('Machine Gun'))
+    if 1:
+        aux=[]
+        aux.append('FIRING 21MM ROUNDS AT 7500')
+        aux.append('ROUNDS/MIN MAKES THE REAVER')
+        aux.append('THE BASIC WEAPON OF CHOICE')
+        aux.append('FOR MOST PILOTS')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #4
+    shop_magazine.append(Plasma_Cannon('Plasma Cannon'))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #5
+    shop_magazine.append(Micro_Missle('Micro Missle'))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #6
+    shop_magazine.append(AA_missle('Air/Air Missle'))
+    if 1:
+        aux=[]
+        aux.append('THE AIM-31 MAULER HAS BEEN THE')
+        aux.append('MAINSTAY OF MOST MILITARY FORCES')
+        aux.append('SINCE ITS INTRODUCTION IN 1997.')
+        aux.append('THE UNRIVALED RELIABILITY OF THE')
+        aux.append('MAULER MAKES IT A NECESSITY IN')
+        aux.append('ANY DOGFIGHT')
+        shop_description_lines.append(aux)
+
+    #7
+    shop_magazine.append(AG_missle('Air/Ground Missle'))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #8
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #9
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #10
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #11
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #12
+    shop_magazine.append(Laser_turret('Laser Turret'))
+    if 1:
+        aux=[]
+        aux.append("THE OD55 'ODIN' LASER TURRET IS")
+        aux.append('A PILOTS BEST CHOICE OFR AIR ')
+        aux.append('COMBAT. SIMILAR TO THE TH19')
+        aux.append('THOR, THE ODIN HAS A FASTER')
+        aux.append("RESPONSE TIME WITH THE LASER'S")
+        aux.append('INCREASED FIREPOWER.')
+        shop_description_lines.append(aux)
+
+    #13
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #14
+    shop_magazine.append(Energy_module('Energy Module',100))
+    if 1:
+        aux=[]
+        aux.append('NOT IMPLEMENTED YET')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        aux.append('')
+        shop_description_lines.append(aux)
+
+    #15
+    shop_magazine.append(Twin_Laser('Twin Laser'))
+    if 1:
+        aux=[]
+        aux.append('THE CAL-10 ECLIPSE IS THE MOST')
+        aux.append('POWERFUL WEAPON AVAILABLE')
+        aux.append('TWIN BEAMS OF AZURE FIRE')
+        aux.append('WILL INCINERATE ANYTHING IN')
+        aux.append('THEIR PATH.')
+        aux.append('ps: use headfones!')
+        shop_description_lines.append(aux)
+
+
+    print(shop_description_lines)
+
+
+
 
 
 # chamadas DE SPAWN - x,y é o centro da animação!!!
@@ -623,7 +827,7 @@ class menu:  # (settings_file,profiles_file,crosshair_file,bgm_file):
         # se tiver uma op diferente toca sonzinho
         if op!=self.lastop and op!=None:
             self.button_sound.play()
-        # segura a ultia op pro p~óx ciclo
+        # segura a ultimia op pro p~óx ciclo
         self.lastop=op
 
         if (self.cursor.buttons)[0]==0:
@@ -798,6 +1002,49 @@ class MenuButton(Object):  # (imagefileA,imagefileB,PosH,PosV,mode=None):
         else:
             self.image=self.imageB
 
+    def update_image(self,a,b=None):
+        if b==None:
+            b=a
+        self.imageB=pygame.image.load(a).convert_alpha()
+        self.imageA=pygame.image.load(b).convert_alpha()
+
+class Display():
+    def __init__(self,money_id,picture_id,name_id,function_id,desc_texts,have_id,cost_id,value_id,button_id):
+        self.money_id=money_id
+        self.picture_id=picture_id
+        self.name_id=name_id
+        self.function_id=function_id
+        self.desc_texts=desc_texts
+        self.have_id=have_id
+        self.cost_id=cost_id
+        self.value_id=value_id
+        self.button_id=button_id
+
+
+
+    def update(self,money,cursor,have_amount,selling=False):
+        render.texts[self.money_id].update_text(str(money))
+        render.objects[self.picture_id].image=shop_magazine[cursor].image_2x
+        render.texts[self.name_id].update_text(shop_magazine[cursor].name)
+        render.texts[self.function_id].update_text(shop_magazine[cursor].function)
+        k=0
+        for i in self.desc_texts:
+            render.texts[i].update_text(shop_description_lines[cursor][k])
+            k+=1
+
+        render.texts[self.have_id].update_text(str(have_amount))
+        if selling:
+            render.texts[self.cost_id].update_text('RESALE')
+            render.texts[self.button_id].update_text('SELL')
+        else:
+            render.texts[self.cost_id].update_text('COST')
+            render.texts[self.button_id].update_text('BUY')
+
+        render.texts[self.value_id].update_text(str(shop_magazine[cursor].cost))
+
+
+
+
 
 # BACKGROUND
 class Background:
@@ -881,7 +1128,9 @@ class Weapon:
         # image-self
         file='images/weapons/'+str(self.data[1])+'.png'
         self.image=pygame.image.load(file).convert_alpha()
+        self.image_2x=self.image
         self.image=pygame.transform.scale(self.image,(50,50))
+
 
         self.rect=self.image.get_rect()
         self.rect.center=(sresH-60,28)
@@ -902,6 +1151,8 @@ class AA_missle(Weapon):
         self.cooldown=self.data[3]
         self.stringName='AIM-31 "Mauler" Air/Air Missile'
         self.movement_update=False
+
+        self.function='Active'
         # audio
         aux='sounds/weapons/aa_missle.ogg'
         self.fire_sound=pygame.mixer.Sound(aux)
@@ -941,6 +1192,12 @@ class AA_missle(Weapon):
         pass
 
 
+class AG_missle(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
+
+
 class Machine_gun(Weapon):
     def define_projectile(self):
         self.projectile_image=pygame.image.load('images/projectiles/mg.png').convert_alpha()
@@ -952,6 +1209,7 @@ class Machine_gun(Weapon):
         self.cooldown=self.data[3]
         self.stringName='MG21C Twin Reaver Machine Guns'
         self.movement_update=False
+        self.function='Passive - Always Equipped'
 
         # audio
         aux='sounds/weapons/mg.ogg'
@@ -1004,6 +1262,7 @@ class Laser_turret(Weapon):
         self.proj=pseudo_Projectile(self.data[2],'Laser Turret')
         self.movement_update=True
         self.stringName='OD55 "Odin" Laser Turret'
+        self.function='Active'
 
     def enter_battle(self,n):
         self.line_n=n
@@ -1088,6 +1347,7 @@ class Twin_Laser(Weapon):
         self.current_frame=0
         self.proj=pseudo_Projectile(self.data[2],'Twin Laser')
         self.stringName='CAL-10 "Eclipse" Twin Lasers'
+        self.function='Active'
 
 
         #carrega as bubbles dos tiros
@@ -1162,6 +1422,18 @@ class Twin_Laser(Weapon):
 
         self.current_frame=-1
 
+    def deactivate(self):
+        render.lines[self.line_n].start=(0,0)
+        render.lines[self.line_n].end=(0,0)
+        render.lines[self.line_n+1].start=(0,0)
+        render.lines[self.line_n+1].end=(0,0)
+        render.lines[self.line_n+2].start=(0,0)
+        render.lines[self.line_n+2].end=(0,0)
+        render.lines[self.line_n+3].start=(0,0)
+        render.lines[self.line_n+3].end=(0,0)
+        self.set_bubbles((-100,-100),0)
+        self.set_line((-100,-100),0,0)
+
     def update_line_color(self):
         render.lines[self.line_n].color=self.lineColor_OUTER[self.current_frame]
         render.lines[self.line_n+1].color=self.lineColor_OUTER[self.current_frame]
@@ -1178,7 +1450,7 @@ class Twin_Laser(Weapon):
         render.lines[self.line_n+3].start=(pos[0]+self.offset-1,pos[1]+10)
         render.lines[self.line_n+3].end=(pos[0]+self.offset-1,pos[1]-5-lenB)
 
-    def move(self):
+    def move(self,force_deactivate=False):
         if self.current_frame>=0:
             self.set_bubbles(self.my_ship.rect.center,self.current_frame)
             #colocar aqui os limites e se estiver hitando alguem devolver a informação
@@ -1295,6 +1567,28 @@ class Twin_Laser(Weapon):
                     self.update_line_color()
 
 
+class Mega_Bomb(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+
+        self.function='Active'
+
+
+class Plasma_Cannon(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
+
+
+class Micro_Missle(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Passive - Always Equipped'
+
+
+
+
+
 # WEAPONS INIMIGAS
 class flak:
     def __init__(self,name):
@@ -1331,6 +1625,8 @@ class Shield:
         self.stringName=name
 
         self.name=name
+        self.function='Defensive'
+        self.cost=75000
         self.hp=self.data[2]
         self.current_hp=int(self.hp*perc)
         self.multiplier=self.data[3]
@@ -1338,6 +1634,7 @@ class Shield:
         # pygame stuff
         file='images/items/'+str(self.data[1])+'.png'
         self.image=pygame.image.load(file).convert_alpha()
+        self.image_2x=self.image
         self.rect=self.image.get_rect()
 
     def take_damage(self,dmg):
@@ -1353,7 +1650,6 @@ class Energy_module:
         # read data
         items_db_cursor.execute('SELECT * FROM items WHERE name="'+name+'"')
         self.data=items_db_cursor.fetchall()[0]
-        print(self.data)
 
         self.name=name
         self.stringName=name
@@ -1361,15 +1657,21 @@ class Energy_module:
         self.current_hp=int(self.hp*perc)
         self.multiplier=self.data[3]
 
+        #description
+        self.cost=25000
+        self.function=''
+
         # pygame stuff
         file='images/items/'+str(self.data[1])+'.png'
         self.image=pygame.image.load(file).convert_alpha()
+        self.image_2x=self.image
         self.rect=self.image.get_rect()
 
     def take_damage(self,dmg):
         self.current_hp-=dmg
         if self.current_hp<0:
             self.current_hp=0
+
 
 #######################################
 ######### SHIP DO PLAYER ##############
@@ -1509,6 +1811,7 @@ class Ship:
             self.switch_weapon_sound.play()
         else:
             if op==None:
+                lastwpn=self.active_weapon
                 self.active_weapon+=1
                 while(self.weapon_magazine[self.active_weapon]==None or self.active_weapon>=10):
                     self.active_weapon+=1
@@ -1521,6 +1824,8 @@ class Ship:
                     self.active_weapon=op
 
             #ja troca o iconezinho do render!!
+            if lastwpn in [9]:
+                self.weapon_magazine[lastwpn].deactivate()
             self.weapon_magazine[self.active_weapon].activate()
             render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
 

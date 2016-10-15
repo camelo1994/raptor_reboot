@@ -8,6 +8,7 @@ nas definicoes, apos o return #op significa operação
 
 $->ação interna do menu
 %-> ação externa
+*-> ação volta até o programa principal
 
 '''
 
@@ -55,4 +56,17 @@ def check_choice(status,op):
         elif op==4:
             return('$%save')
 
+    if status=='supply':
+        if op==0:
+            return('*main')
+        elif op==1:
+            return('*+')
+        elif op==2:
+            return('*-')
+        elif op==3:
+            return('*ok')
+        elif op==4:
+            return('*l')
+        elif op==5:
+            return('*r')
             

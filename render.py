@@ -1,21 +1,20 @@
 import threading,time,pygame,colors,os,classes,colorama
 from colorama import Fore
 
-#se tiver #$ na frente eh pq usa in-game
-objects=[]#$
-texts=[]#$
-lines=[]#$
+# se tiver #$ na frente eh pq usa in-game
+objects=[]  # $
+texts=[]  # $
+lines=[]  # $
 cursors=[]
 buttons=[]
-projectiles=[]#$
-sprays=[]#$
-sprites=[]#$
-shield_UI=[]#$-sao as barras laterais
-hp_UI=[]#$-barra lateral
-enemy_ships=[]#sao as naves inimgas e elas se blitam
+projectiles=[]  # $
+sprays=[]  # $
+sprites=[]  # $
+shield_UI=[]  # $-sao as barras laterais
+hp_UI=[]  # $-barra lateral
+enemy_ships=[]  # sao as naves inimgas e elas se blitam
 shadows=[]
 static_objects=[]
-
 
 background=None
 player=None
@@ -23,7 +22,7 @@ player_shadow=None
 
 
 def update_list(list,spritelist=False,flaga=None,flagb=None):
-    #se for sprites spritelist tem q ser true!!!, pra limpoar o sprite tb
+    # se for sprites spritelist tem q ser true!!!, pra limpoar o sprite tb
     global sprites
     n=0
     will_remove=False
@@ -57,22 +56,22 @@ class Blit:
 
 class render_thread_class(threading.Thread):
     def __init__(self,sresH,sresV,windowname,crosshair_file,fps,enable_shadows):
-        #from classes import menu
+        # from classes import menu
         self.print('Initializing render thread...')
         threading.Thread.__init__(self)
         self.print('Booting screen...')
 
-        #startwindow
-        os.environ['SDL_VIDEO_WINDOW_POS']="%d,%d"%(100,100)  #-> USE IF WINDOWED
+        # startwindow
+        os.environ['SDL_VIDEO_WINDOW_POS']="%d,%d"%(100,100)  # -> USE IF WINDOWED
         flags=pygame.HWACCEL
-        flags|= pygame.HWSURFACE
-        self.screen=pygame.display.set_mode((sresH,sresV),flags,16)#-> WINDOW STYLE, add kvarg=FULLSCREEN/NOFRAME
+        flags|=pygame.HWSURFACE
+        self.screen=pygame.display.set_mode((sresH,sresV),flags,16)  # -> WINDOW STYLE, add kvarg=FULLSCREEN/NOFRAME
         pygame.display.set_caption(windowname)
 
-        #start cursor
+        # start cursor
         self.cursorObj=classes.Object(pygame.image.load(crosshair_file),sresH/2,sresV/2,0,0)
 
-        #startclock
+        # startclock
         self.Clocktime=0
         self.fpscounterclock=0
         self.desired_fps=fps
@@ -86,8 +85,7 @@ class render_thread_class(threading.Thread):
             self.frametime=0
             self.print('Frametime set to 0, running max fps')
 
-
-        #flags
+        # flags
         self.run_flag=True
         self.show_cursor=True
         self.show_player=False
@@ -96,7 +94,7 @@ class render_thread_class(threading.Thread):
         self.background=False
         self.enable_shadows=enable_shadows
 
-        #debug
+        # debug
         debug_filepath='fonts/AndikaNewBasic-R.ttf'
         self.print(' loading file: '+debug_filepath)
         debug_text_str='debug'
@@ -128,16 +126,15 @@ class render_thread_class(threading.Thread):
         self.print('Objects -> Projectiles->Texts -> Lines -> Buttons\n')
 
         while self.run_flag:
-            if pygame.time.get_ticks()-self.Clocktime>=self.frametime:
+            if 1:  # pygame.time.get_ticks()-self.Clocktime>=self.frametime:
                 self.Clocktime=pygame.time.get_ticks()
 
-                #printa o fundo
+                # printa o fundo
                 if self.background:
                     background.blit(self.screen)
                 else:
                     self.screen.fill(colors.BLACK)
 
-                #prita objetos estaticos soltos
                 for i in objects:
                     self.screen.blit(i.image,i.rect)
 
@@ -147,28 +144,27 @@ class render_thread_class(threading.Thread):
                     for i in enemy_ships:
                         i.blit_shadow(self.screen)
 
-                #printa os projeteis - tem seu proprio blit()
+                # printa os projeteis - tem seu proprio blit()
                 for i in projectiles:
                     i.blit(self.screen)
 
-                #printa naves inimigas - elas tem q ter seu proprio blit()
+                # printa naves inimigas - elas tem q ter seu proprio blit()
                 for i in enemy_ships:
                     if i.alive:
                         i.blit(self.screen)
 
-
-
-                #printa sprites avulsos - possuem seu proprio blit -  classe Animation()
+                # printa sprites avulsos - possuem seu proprio blit -  classe Animation()
                 for i in sprites:
                     i.blit(self.screen)
-                #printa linhas
+                # printa linhas
                 for i in lines:
                     pygame.draw.line(self.screen,i.color,i.start,i.end,i.width)
                 for i in buttons:
                     self.screen.blit(i.image,i.rect)
-                #printa textos
+                # printa textos
                 for i in texts:
                     self.screen.blit(i.text,i.rect)
+                # prita objetos estaticos soltos
                 if self.show_static_objects:
                     for i in static_objects:
                         self.screen.blit(i.image,i.rect)
@@ -180,24 +176,22 @@ class render_thread_class(threading.Thread):
                         self.screen.blit(i.image,i.rect)
                     player.blit(self.screen)
 
-
-                #prints debug text
+                # prints debug text
                 self.screen.blit(self.debug_text.text,self.debug_text.rect)
 
-                #blits teh cursor
+                # blits teh cursor
                 if self.show_cursor:
                     self.screen.blit(self.cursorObj.image,self.cursorObj.rect)
-
 
                 pygame.display.update()
                 self.fps+=1
 
-                #self control de fps
+                # self control de fps
                 if (pygame.time.get_ticks()-self.fpscounterclock)>500:
                     self.fpscounterclock=pygame.time.get_ticks()
                     self.fps_show=self.fps*2
                     self.fps=0
-                    if self.desired_fps != 0:
+                    if self.desired_fps!=0:
                         if self.fps_show>self.desired_fps+10:
                             if self.frametime<25:
                                 self.frametime+=1
@@ -205,11 +199,10 @@ class render_thread_class(threading.Thread):
                             if self.frametime>1:
                                 self.frametime-=1
 
-
         self.print('Finishing render thread.')
 
 
-class updater_thread_class(threading.Thread):#NAO IMPLEMENTADO -DEU RUIM
+class updater_thread_class(threading.Thread):  # NAO IMPLEMENTADO -DEU RUIM
     def __init__(self,bg):
         self.print('Initalizing updater thread ...')
         threading.Thread.__init__(self)
@@ -243,10 +236,5 @@ class updater_thread_class(threading.Thread):#NAO IMPLEMENTADO -DEU RUIM
                 pygame.time.wait(500)
 
         pygame.time.wait(100)
-
-
-
-
-
 
         self.print('Finishing updater thread.')
