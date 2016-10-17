@@ -135,6 +135,7 @@ while 1:
 
         elif menu.last_status=='supply':
             print('Leaving '+menu.last_status+' menu...')
+            menu.player.ship.redefine_magazine()
 
         elif menu.last_status=='ship':
             print('Leaving '+menu.last_status+' menu...')
@@ -455,8 +456,6 @@ while 1:
                 display=classes.Display(player_money_text_id,item_picture_id,name_text_id,function_text_id,\
                                         shop_texts_id,have_text_id,cost_text_id,value_text_id,\
                                         buy_sell_text_id,have_str_text_id)
-
-
         if menu.next_status=='ship':
             print('Generating ship menu...')
             renderer.clear_control()
@@ -727,12 +726,18 @@ while 1:
                             render.buttons[sell_btn_index].update_image('images/supply_room/sell_ON.png')
                             render.texts[buy_sell_text_id].update_text('SELL')
                         elif a=='ok':
-                            pass
-
+                            if classes.sell_weapon(menu.player,cursor,display)==-1:
+                                cursor=display.next(cursor)
+                            display.update(menu.player.money,cursor, \
+                                        classes.get_if_have(menu.player.ship,cursor),True)
                         elif a=='l':
-                            pass
+                            cursor=display.prev(cursor)
+                            display.update(menu.player.money,cursor, \
+                                        classes.get_if_have(menu.player.ship,cursor),True)
                         elif a=='r':
-                            pass
+                            cursor=display.next(cursor)
+                            display.update(menu.player.money,cursor, \
+                                        classes.get_if_have(menu.player.ship,cursor),True)
 
             #debug_text
             renderer.debug_text.update_text('Mouse: X,Y('+str(menu.cursor.posX)\
@@ -867,8 +872,7 @@ while 1:
             #atira se tiver com wm1 apertado
             if menu.cursor.buttons[0]:
                 a,b,src=render.player.fire()
-                #print('a'+str(a))
-                #print('b'+str(b))
+
                 if a!=None:
                     if render.enemy_ships[a].take_damage(src):
                         menu.player.money+=render.enemy_ships[a].value

@@ -334,7 +334,7 @@ def start_shop_magazine():
         aux.append('THE BASIC WEAPON OF CHOICE')
         aux.append('FOR MOST PILOTS')
         aux.append('')
-        aux.append('')
+        aux.append('CANT BE SOLD - JUST FOR SHOW!')
         shop_description_lines.append(aux)
 
     #4
@@ -524,7 +524,6 @@ def spawn_sprite(x,y,key,dx=0,dy=0):
         render.sprites.append(Animation(aux.Animation,anim_rect(x,y,dx,dy,aux.w,aux.h)))
         render.sprites[n].animation.play()
     else:
-        print(key)
         if key=='null':
             a=1
         elif key==None:
@@ -1075,8 +1074,13 @@ class Display:
         render.objects[self.picture_id].rect.left=930
         render.objects[self.picture_id].rect.top=168
         render.texts[self.have_str_id].update_text('YOU HAVE')
+        if self.lastmode=='selling':
+            render.texts[self.cost_id].update_text('RESALE')
+        else:
+            render.texts[self.cost_id].update_text('COST')
 
     def swap(self,op,error_number=None):
+        self.lastmode=self.status
         self.status=op
         if op=='error':
             play_sound('menu_error')
@@ -1106,43 +1110,38 @@ class Display:
             render.objects[self.picture_id].image=self.shop_sell_magazine[cursor].image_2x
             render.texts[self.name_id].update_text(self.shop_sell_magazine[cursor].name)
             render.texts[self.function_id].update_text(self.shop_sell_magazine[cursor].function)
-            render.texts[self.value_id].update_text(str(self.shop_sell_magazine[cursor].cost))
+            render.texts[self.value_id].update_text(str(int(self.shop_sell_magazine[cursor].cost/2)))
+            render.texts[self.have_id].update_text(str(int(have)))
+            render.texts[self.button_id].update_text('SELL')
             k=0
             for i in self.desc_texts:
                 render.texts[i].update_text(shop_description_lines[cursor][k])
                 k+=1
-
-            render.texts[self.have_id].update_text(str(have))
         else:
             render.texts[self.money_id].update_text('$'+str(money))
             render.objects[self.picture_id].image=shop_magazine[cursor].image_2x
             render.texts[self.name_id].update_text(shop_magazine[cursor].name)
             render.texts[self.function_id].update_text(shop_magazine[cursor].function)
-            render.texts[self.value_id].update_text(str(shop_magazine[cursor].cost))
+            render.texts[self.value_id].update_text(str(int(shop_magazine[cursor].cost)))
+            render.texts[self.have_id].update_text(str(int(have)))
+            render.texts[self.button_id].update_text('BUY')
             k=0
             for i in self.desc_texts:
                 render.texts[i].update_text(shop_description_lines[cursor][k])
                 k+=1
 
-
-
-            render.texts[self.have_id].update_text(str(have))
-
-
-
-        if selling:
-            render.texts[self.button_id].update_text('SELL')
-        else:
-            render.texts[self.button_id].update_text('BUY')
-
-
-
     def enter_sell_mode(self,player):
         self.status='sell'
         self.shop_sell_magazine=[]
+        self.nones_items=[]
         self.shop_sell_magazine.append(player.ship.energy_module)
         self.shop_sell_magazine.append(player.ship.shield)
-        self.shop_sell_magazine.append(player.ship.megabomb_weapon)
+        if player.ship.bombs==0:
+            self.shop_sell_magazine.append(None)
+            self.nones_items.append(2)
+        else:
+            self.shop_sell_magazine.append(player.ship.megabomb_weapon)
+
 
         self.shop_sell_magazine.append(player.ship.weapon_magazine[10])
         self.shop_sell_magazine.append(player.ship.weapon_magazine[12])
@@ -1158,14 +1157,31 @@ class Display:
         self.shop_sell_magazine.append(player.ship.weapon_magazine[8])
         self.shop_sell_magazine.append(player.ship.weapon_magazine[9])
 
-        self.nones_items=[]
+
         for i in range(len(self.shop_sell_magazine)):
             if self.shop_sell_magazine[i]==None:
                 self.nones_items.append(i)
+        print(len(self.shop_sell_magazine))
+        print(self.nones_items)
 
+    def next(self,cursor):
+        a=cursor+1
+        if a==16:
+            return 0
+        elif a in self.nones_items:
+            return self.next(a)
+        return a
 
-    def sellupdate(self):
-        pass
+    def prev(self,cursor):
+        a=cursor-1
+        if a==-1:
+            return self.prev(16)
+        elif a==0:
+            return a
+        elif a in self.nones_items:
+            return self.prev(a)
+
+        return a
 
 
 # BACKGROUND
@@ -1989,6 +2005,14 @@ class Ship:
             self.weapon_magazine[self.active_weapon].activate()
             render.objects[weapon_object_number]=self.weapon_magazine[self.active_weapon]
 
+    def redefine_magazine(self):
+        self.active_weapon=10
+        self.has_no_weapons=True
+        for i in range(10):
+            if self.weapon_magazine[i]!=None:
+                self.active_weapon=i
+                self.has_no_weapons=False
+
     def move(self,p):
         self.x=p[0]-self.rect.centerx
         y=p[1]-self.rect.centery
@@ -2105,8 +2129,10 @@ class Ship:
 
 
         #atira com a ativa
-        if self.weapon_magazine[self.active_weapon]!=None:
+        if not self.has_no_weapons:
             return self.weapon_magazine[self.active_weapon].fire(self.rect.center)
+        else:
+            return None,None,None
 
     def unfire(self):
         if self.weapon_magazine[self.active_weapon]!=None:
@@ -2597,6 +2623,33 @@ def get_if_have(ship,cursor):
         return ship.weapon_magazine[9]!=None
 
 
+def get_wpn_index_on_ship(cursor):
+    if cursor==4:
+        return 12
+    elif cursor==5:
+        return 11
+    elif cursor==6:
+        return 0
+    elif cursor==7:
+        return 1
+    elif cursor==8:
+        return 7
+    elif cursor==9:
+        return 2
+    elif cursor==10:
+        return 3
+    elif cursor==11:
+        return 5
+    elif cursor==12:
+        return 4
+    elif cursor==13:
+        return 6
+    elif cursor==14:
+        return 8
+    elif cursor==15:
+        return 9
+
+
 def get_index(cursor):
     if cursor==3:
         return 10
@@ -2624,6 +2677,7 @@ def get_index(cursor):
         return 8
     elif cursor==15:
         return 9
+
 
 def buy_weapon(player,cursor):
     #retorna -1 se n tem dinheiro
@@ -2669,7 +2723,6 @@ def buy_weapon(player,cursor):
                 player.money-=shop_magazine[cursor].cost
                 return 0
 
-
         elif cursor==12:
             if get_if_have(player.ship,cursor):
                 return -2
@@ -2689,3 +2742,48 @@ def buy_weapon(player,cursor):
             return 0
 
 
+def get_list_index(val,list):
+    k=0
+    for i in list:
+        if i==val:
+            return k
+        k+=1
+    return None
+
+
+def sell_weapon(player,cursor,display):
+    if cursor==0:
+        if player.ship.energy_module.current_hp>=26:
+            player.ship.energy_module.current_hp-=25
+            player.money+=int(shop_magazine[cursor].cost/2)
+            if player.ship.energy_module.current_hp<25:
+                display.nones_items.append(cursor)
+                return -1
+            return 0
+
+    elif cursor==1:
+        if player.ship.shield.layers>0:
+            player.ship.shield.layers-=1
+            player.money+=int(shop_magazine[cursor].cost/2)
+            if player.ship.shield.layers==0:
+                display.nones_items.append(cursor)
+                return -1
+            return 0
+
+    elif cursor==2:
+        if player.ship.bombs>0:
+            player.ship.bombs-=1
+            player.money+=int(shop_magazine[cursor].cost/2)
+            if player.ship.bombs==0:
+                display.nones_items.append(cursor)
+                return -1
+            return 0
+
+    elif cursor==3:
+        return 0
+
+    else:
+        player.ship.weapon_magazine[get_wpn_index_on_ship(cursor)]=None
+        player.money+=int(shop_magazine[cursor].cost/2)
+        display.nones_items.append(cursor)
+        return -1
