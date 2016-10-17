@@ -47,8 +47,8 @@ if 1:
     sresH=1280
     sresV=800
     fps=75
-    BGMVOL=0.1
-    SFXVOL=0.15
+    BGMVOL=0.3
+    SFXVOL=0.4
     enable_shadows=True
 
 #CONTROLE/FLAGS
@@ -320,6 +320,7 @@ while 1:
         if menu.next_status=='supply':
             print('Generating supply menu...')
             renderer.clear_control()
+            classes.play_sound('menu_swap')
 
             #objetos
             if 1:
@@ -452,7 +453,8 @@ while 1:
                 mode='buy'
                 cursor=0
                 display=classes.Display(player_money_text_id,item_picture_id,name_text_id,function_text_id,\
-                                        shop_texts_id,have_text_id,cost_text_id,value_text_id,buy_sell_text_id)
+                                        shop_texts_id,have_text_id,cost_text_id,value_text_id,\
+                                        buy_sell_text_id,have_str_text_id)
 
 
         if menu.next_status=='ship':
@@ -467,6 +469,7 @@ while 1:
             menu.cursor.diff_mode()
             #esconde o cursor
             renderer.show_cursor=False
+            classes.play_sound('menu_swap')
 
             #faz a linha de loading
             render.lines.append(classes.loading_line((50,sresV-10),(sresH-50,sresV-10),colors.RED1,2))
@@ -646,12 +649,22 @@ while 1:
 
             if display.status=='intro':
                 if menu.cursor.buttons[2]==1 or menu.cursor.buttons[0]==1:
-                   display.swap('buy')
+                   display.swap(mode)
                    render.objects[item_picture_id].rect.centerx+=50
                    display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
                    render.texts[have_str_text_id].update_text('YOU HAVE')
+                   render.texts[cost_text_id].update_text('COST')
 
-            if display.status=='buy':
+            elif display.status=='error':
+                if a!=None:
+                    a=a[1:]
+                    if a=='ok':
+                        display.status=mode
+                        display.recover_from_error()
+                        display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
+
+
+            elif display.status=='buy':
                 if a!=None:
                     a=a[1:]
                     if a=='main':
@@ -665,29 +678,61 @@ while 1:
                             render.texts[buy_sell_text_id].update_text('BUY')
                         elif a=='-':
                             mode='sell'
+                            display.enter_sell_mode(menu.player)
+                            cursor=0
+                            render.texts[cost_text_id].update_text('RESALE')
+                            display.update(menu.player.money,cursor,\
+                                           classes.get_if_have(menu.player.ship,cursor),True)
                             render.buttons[buy_btn_index].update_image('images/supply_room/buy_OFF.png')
                             render.buttons[sell_btn_index].update_image('images/supply_room/sell_ON.png')
                             render.texts[buy_sell_text_id].update_text('SELL')
                         elif a=='ok':
-                            classes.buy_weapon(menu.player,cursor)
-                            display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
+                            b=classes.buy_weapon(menu.player,cursor)
+                            if b<0:
+                                display.swap('error',b)
+                            else:
+                                display.update(menu.player.money,cursor,\
+                                               classes.get_if_have(menu.player.ship,cursor),False)
 
                         elif a=='l':
                             if cursor==0:
                                 cursor=15
                             else:
                                 cursor-=1
-
-
                             display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
                         elif a=='r':
                             if cursor==15:
                                 cursor=0
                             else:
                                 cursor+=1
-
-
                             display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
+
+            elif display.status=='sell':
+                if a!=None:
+                    a=a[1:]
+                    if a=='main':
+                        menu.swap('hangar')
+                    else:
+                        action_sound.play()
+                        if a=='+':
+                            mode='buy'
+                            render.texts[cost_text_id].update_text('COST')
+                            display.swap('buy')
+                            render.buttons[buy_btn_index].update_image('images/supply_room/buy_ON.png')
+                            render.buttons[sell_btn_index].update_image('images/supply_room/sell_OFF.png')
+                            render.texts[buy_sell_text_id].update_text('BUY')
+                        elif a=='-':
+                            mode='sell'
+                            render.buttons[buy_btn_index].update_image('images/supply_room/buy_OFF.png')
+                            render.buttons[sell_btn_index].update_image('images/supply_room/sell_ON.png')
+                            render.texts[buy_sell_text_id].update_text('SELL')
+                        elif a=='ok':
+                            pass
+
+                        elif a=='l':
+                            pass
+                        elif a=='r':
+                            pass
 
             #debug_text
             renderer.debug_text.update_text('Mouse: X,Y('+str(menu.cursor.posX)\
@@ -696,7 +741,8 @@ while 1:
                                             +','+str(menu.cursor.posdY)+')'\
                                             +'m1,m2,m3'+str(menu.cursor.buttons)\
                                             +'op('+str(menu.op)+')' \
-                                            +'cursor('+str(cursor)+')',colors.BLACK)
+                                            +'cursor('+str(cursor)+')'\
+                                            +'display_status('+str(display.status)+')',colors.BLACK)
 
         while menu.status=='ship':
             for event in pygame.event.get():
