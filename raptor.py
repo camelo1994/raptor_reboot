@@ -340,10 +340,11 @@ while 1:
                 aux=classes.Object(aux,105,290,0,0)
                 render.objects.append(aux)
 
-                # foto dotem pleie
+                # foto item
                 item_picture_id=len(render.objects)
-                aux=classes.shop_magazine[0].image
-                aux=classes.Object(aux,520,165,0,0)
+                file='dev_menu/supply_room/audrey.png'
+                aux=pygame.image.load(file).convert_alpha()
+                aux=classes.Object(aux,930,168,0,0)
                 render.objects.append(aux)
 
             #butoes
@@ -383,21 +384,22 @@ while 1:
             # textos
             player_money_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='$'+str(menu.player.money)
+            txt=''
             render.texts.append(classes.text(txt,filepath,32,colors.GRAY_MENU,185,580,0))  # dinhero
 
             buy_sell_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='BUY'
+            txt=''
             render.texts.append(classes.text(txt,filepath,48,colors.GREEN_SUP_ROOM,798,666,0))  # botao sell/buy
 
+            have_str_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='YOU HAVE'
+            txt=''
             render.texts.append(classes.text(txt,filepath,30,colors.GREEN_MENU,512,500,1))
 
             cost_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='COST'
+            txt=''
             render.texts.append(classes.text(txt,filepath,30,colors.GREEN_MENU,900,500,1))
 
             # textos de descrição
@@ -405,25 +407,25 @@ while 1:
             #name
             name_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='NOME'
-            render.texts.append(classes.text(txt,filepath,30,colors.YELLOW_MENU,720,170,1))
+            txt="WELCOME TO AUDREY'S"
+            render.texts.append(classes.text(txt,filepath,30,colors.YELLOW_MENU,542,180,1))
 
             #function
             function_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='KAPPA'
-            render.texts.append(classes.text(txt,filepath,28,colors.RED_MENU,720,210,1))
+            txt='WEAPONS EMPORIUM'
+            render.texts.append(classes.text(txt,filepath,28,colors.RED_MENU,600,220,1))
 
             # cost
             value_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='2134'
+            txt=''
             render.texts.append(classes.text(txt,filepath,36,colors.GRAY_MENU,980,556,0))
 
             # have or not
             have_text_id=len(render.texts)
             filepath='fonts/AndikaNewBasic-R.ttf'
-            txt='yes'
+            txt=''
             render.texts.append(classes.text(txt,filepath,36,colors.GRAY_MENU,610,556,0))
 
 
@@ -434,7 +436,7 @@ while 1:
             for i in range(6):
                 shop_texts_id.append(len(render.texts))
                 filepath='fonts/AndikaNewBasic-R.ttf'
-                txt=classes.shop_description_lines[0][i]
+                txt=classes.shop_description_lines[16][i]
                 render.texts.append(classes.text(txt,filepath,30,colors.RED,512,280+k,1))
                 k+=32
 
@@ -451,6 +453,7 @@ while 1:
                 cursor=0
                 display=classes.Display(player_money_text_id,item_picture_id,name_text_id,function_text_id,\
                                         shop_texts_id,have_text_id,cost_text_id,value_text_id,buy_sell_text_id)
+
 
         if menu.next_status=='ship':
             print('Generating ship menu...')
@@ -639,37 +642,52 @@ while 1:
 
             #atualiza o menu
             a=menu.update(renderer)
-            if a!=None:
-                a=a[1:]
-                if a=='main':
-                    menu.swap('hangar')
-                else:
-                    action_sound.play()
-                    if a=='+':
-                        mode='buy'
-                        render.buttons[buy_btn_index].update_image('images/supply_room/buy_ON.png')
-                        render.buttons[sell_btn_index].update_image('images/supply_room/sell_OFF.png')
-                        render.texts[buy_sell_text_id].update_text('BUY')
-                    elif a=='-':
-                        mode='sell'
-                        render.buttons[buy_btn_index].update_image('images/supply_room/buy_OFF.png')
-                        render.buttons[sell_btn_index].update_image('images/supply_room/sell_ON.png')
-                        render.texts[buy_sell_text_id].update_text('SELL')
-                    elif a=='ok':
-                        print('ação!')
 
-                    elif a=='l':
-                        if cursor==0:
-                            cursor=15
-                        else:
-                            cursor-=1
-                        display.update(menu.player.money,cursor,2,False)
-                    elif a=='r':
-                        if cursor==15:
-                            cursor=0
-                        else:
-                            cursor+=1
-                        display.update(menu.player.money,cursor,2,False)
+
+            if display.status=='intro':
+                if menu.cursor.buttons[2]==1 or menu.cursor.buttons[0]==1:
+                   display.swap('buy')
+                   render.objects[item_picture_id].rect.centerx+=50
+                   display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
+                   render.texts[have_str_text_id].update_text('YOU HAVE')
+
+            if display.status=='buy':
+                if a!=None:
+                    a=a[1:]
+                    if a=='main':
+                        menu.swap('hangar')
+                    else:
+                        action_sound.play()
+                        if a=='+':
+                            mode='buy'
+                            render.buttons[buy_btn_index].update_image('images/supply_room/buy_ON.png')
+                            render.buttons[sell_btn_index].update_image('images/supply_room/sell_OFF.png')
+                            render.texts[buy_sell_text_id].update_text('BUY')
+                        elif a=='-':
+                            mode='sell'
+                            render.buttons[buy_btn_index].update_image('images/supply_room/buy_OFF.png')
+                            render.buttons[sell_btn_index].update_image('images/supply_room/sell_ON.png')
+                            render.texts[buy_sell_text_id].update_text('SELL')
+                        elif a=='ok':
+                            classes.buy_weapon(menu.player,cursor)
+                            display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
+
+                        elif a=='l':
+                            if cursor==0:
+                                cursor=15
+                            else:
+                                cursor-=1
+
+
+                            display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
+                        elif a=='r':
+                            if cursor==15:
+                                cursor=0
+                            else:
+                                cursor+=1
+
+
+                            display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
 
             #debug_text
             renderer.debug_text.update_text('Mouse: X,Y('+str(menu.cursor.posX)\

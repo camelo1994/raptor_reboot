@@ -271,6 +271,8 @@ def start_items_dict():
 
 def start_shop_magazine():
     print('Starting shop magazine...')
+
+
     #0
     shop_magazine.append(Energy_module('Energy Module',100))
     if 1:
@@ -368,7 +370,7 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
     #8
-    shop_magazine.append(Energy_module('Energy Module',100))
+    shop_magazine.append(Dumbfire_missle('Dumbfire Missle'))
     if 1:
         aux=[]
         aux.append('NOT IMPLEMENTED YET')
@@ -380,7 +382,7 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
     #9
-    shop_magazine.append(Energy_module('Energy Module',100))
+    shop_magazine.append(Missle_Pod('Misslepod'))
     if 1:
         aux=[]
         aux.append('NOT IMPLEMENTED YET')
@@ -392,7 +394,7 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
     #10
-    shop_magazine.append(Energy_module('Energy Module',100))
+    shop_magazine.append(Auto_Machine_Gun('Auto Machine Gun'))
     if 1:
         aux=[]
         aux.append('NOT IMPLEMENTED YET')
@@ -404,7 +406,7 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
     #11
-    shop_magazine.append(Energy_module('Energy Module',100))
+    shop_magazine.append(Power_disruptor('Power Disruptor'))
     if 1:
         aux=[]
         aux.append('NOT IMPLEMENTED YET')
@@ -428,7 +430,7 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
     #13
-    shop_magazine.append(Energy_module('Energy Module',100))
+    shop_magazine.append(Pulse_Cannon('Pulse Cannon'))
     if 1:
         aux=[]
         aux.append('NOT IMPLEMENTED YET')
@@ -440,7 +442,7 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
     #14
-    shop_magazine.append(Energy_module('Energy Module',100))
+    shop_magazine.append(Deathray('Plasma Ray'))
     if 1:
         aux=[]
         aux.append('NOT IMPLEMENTED YET')
@@ -463,9 +465,16 @@ def start_shop_magazine():
         aux.append('ps: use headfones!')
         shop_description_lines.append(aux)
 
-
-    print(shop_description_lines)
-
+    #16 intro
+    if 1:
+        aux=[]
+        aux.append('WELCOME TO THE ONE')
+        aux.append('AND ONLY AUTOMATED')
+        aux.append('ONE STOP SHOP. ALL')
+        aux.append('PURCHASES WILL BE LOADED')
+        aux.append('AND INSTALLED FREE OF CHARGE.')
+        aux.append('CHECK OUT THE BARGAINS TODAY!')
+        shop_description_lines.append(aux)
 
 
 
@@ -1008,7 +1017,8 @@ class MenuButton(Object):  # (imagefileA,imagefileB,PosH,PosV,mode=None):
         self.imageB=pygame.image.load(a).convert_alpha()
         self.imageA=pygame.image.load(b).convert_alpha()
 
-class Display():
+
+class Display:
     def __init__(self,money_id,picture_id,name_id,function_id,desc_texts,have_id,cost_id,value_id,button_id):
         self.money_id=money_id
         self.picture_id=picture_id
@@ -1020,10 +1030,15 @@ class Display():
         self.value_id=value_id
         self.button_id=button_id
 
+        #controle
+        self.status='intro'
 
 
-    def update(self,money,cursor,have_amount,selling=False):
-        render.texts[self.money_id].update_text(str(money))
+    def swap(self,op):
+        self.status=op
+
+    def update(self,money,cursor,have,selling=False):
+        render.texts[self.money_id].update_text('$'+str(money))
         render.objects[self.picture_id].image=shop_magazine[cursor].image_2x
         render.texts[self.name_id].update_text(shop_magazine[cursor].name)
         render.texts[self.function_id].update_text(shop_magazine[cursor].function)
@@ -1032,7 +1047,12 @@ class Display():
             render.texts[i].update_text(shop_description_lines[cursor][k])
             k+=1
 
-        render.texts[self.have_id].update_text(str(have_amount))
+
+
+        render.texts[self.have_id].update_text(str(have))
+
+
+
         if selling:
             render.texts[self.cost_id].update_text('RESALE')
             render.texts[self.button_id].update_text('SELL')
@@ -1041,9 +1061,6 @@ class Display():
             render.texts[self.button_id].update_text('BUY')
 
         render.texts[self.value_id].update_text(str(shop_magazine[cursor].cost))
-
-
-
 
 
 # BACKGROUND
@@ -1586,7 +1603,41 @@ class Micro_Missle(Weapon):
         self.function='Passive - Always Equipped'
 
 
+class Dumbfire_missle(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
 
+
+class Missle_Pod(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
+
+
+class Auto_Machine_Gun(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+
+        self.function='Active'
+
+
+class Power_disruptor(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
+
+
+class Pulse_Cannon(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
+
+
+class Deathray(Weapon):
+    def define_projectile(self):
+        self.not_implemented=True
+        self.function='Active'
 
 
 # WEAPONS INIMIGAS
@@ -1630,6 +1681,7 @@ class Shield:
         self.hp=self.data[2]
         self.current_hp=int(self.hp*perc)
         self.multiplier=self.data[3]
+        self.layers=2
 
         # pygame stuff
         file='images/items/'+str(self.data[1])+'.png'
@@ -1805,6 +1857,9 @@ class Ship:
             if i in weapons_to_load:
                 self.weapon_magazine[j]=copy(items_dict.get(i))
             j+=1
+
+        self.megabomb_weapon=Mega_Bomb('Mega Bomb')
+        self.bombs=0
 
     def switch_weapon(self,weapon_object_number,op=None):
         if self.has_no_weapons:
@@ -2400,3 +2455,123 @@ def check_if_on_screen(rect):
         return True
     else:
         return False
+
+
+def get_if_have(ship,cursor):
+    if cursor==0:
+        return ship.energy_module.current_hp
+    elif cursor==1:
+        return ship.shield.layers
+    elif cursor==2:
+        return ship.bombs
+    elif cursor==3:
+        return ship.weapon_magazine[10]!=None
+    elif cursor==4:
+        return ship.weapon_magazine[12]!=None
+    elif cursor==5:
+        return ship.weapon_magazine[11]!=None
+    elif cursor==6:
+        return ship.weapon_magazine[0]!=None
+    elif cursor==7:
+        return ship.weapon_magazine[1]!=None
+    elif cursor==8:
+        return ship.weapon_magazine[7]!=None
+    elif cursor==9:
+        return ship.weapon_magazine[2]!=None
+    elif cursor==10:
+        return ship.weapon_magazine[3]!=None
+    elif cursor==11:
+        return ship.weapon_magazine[5]!=None
+    elif cursor==12:
+        return ship.weapon_magazine[4]!=None
+    elif cursor==13:
+        return ship.weapon_magazine[6]!=None
+    elif cursor==14:
+        return ship.weapon_magazine[8]!=None
+    elif cursor==15:
+        return ship.weapon_magazine[9]!=None
+
+
+def get_index(cursor):
+    if cursor==3:
+        return 10
+    elif cursor==4:
+        return 12
+    elif cursor==5:
+        return 11
+    elif cursor==6:
+        return 0
+    elif cursor==7:
+        return 1
+    elif cursor==8:
+        return 7
+    elif cursor==9:
+        return 2
+    elif cursor==10:
+        return 3
+    elif cursor==11:
+        return 5
+    elif cursor==12:
+        return 4
+    elif cursor==13:
+        return 6
+    elif cursor==14:
+        return 8
+    elif cursor==15:
+        return 9
+
+def buy_weapon(player,cursor):
+    #retorna -1 se n tem dinheiro
+    #retorna -2 se jha tem aa arma
+    if shop_magazine[cursor].cost>player.money:
+        return -1
+    else:
+        if cursor==0:
+            if player.ship.energy_module.current_hp<100:
+                player.ship.energy_module.current_hp+=25
+                if player.ship.energy_module.current_hp>100:
+                    player.ship.energy_module.current_hp=100
+                player.money-=shop_magazine[cursor].cost
+                return 0
+
+        elif cursor==1:
+            if player.ship.shield.layers<5:
+                player.ship.shield.layers+=1
+                if player.ship.shield.layers>5:
+                    player.ship.shield.layers=5
+                player.money-=shop_magazine[cursor].cost
+                return 0
+
+        elif cursor==2:
+            if player.ship.bombs<5:
+                player.ship.bombs+=1
+                if player.ship.bombs>5:
+                    player.ship.bombs=5
+                player.money-=shop_magazine[cursor].cost
+                return 0
+
+        elif cursor==6:
+            if get_if_have(player.ship,cursor):
+                return -2
+            else:
+                player.ship.weapon_magazine[get_index(cursor)]=AA_missle('Air/Air Missle')
+                player.money-=shop_magazine[cursor].cost
+                return 0
+
+        elif cursor==12:
+            if get_if_have(player.ship,cursor):
+                return -2
+            else:
+                player.ship.weapon_magazine[get_index(cursor)]=Laser_turret('Laser Turret')
+                player.money-=shop_magazine[cursor].cost
+                return 0
+
+        elif cursor==15:
+            if get_if_have(player.ship,cursor):
+                return -2
+            else:
+                player.ship.weapon_magazine[get_index(cursor)]=Twin_Laser('Twin Laser')
+                player.money-=shop_magazine[cursor].cost
+                return 0
+
+
