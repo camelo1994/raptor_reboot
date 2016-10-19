@@ -4,13 +4,11 @@ reduzir tamanho das sparks?:???????
 
 
 IMPLEMENTAR:
-twiN laser so ta copiado o texto
-DAR UMA CHECADA NA SOMA DE DINHEIRO QUANDO A ARMA QUE MATA, PQ TA LAGANDO! n faço ideia pq
-pallete de armas quyando trocar
+explosao qnd morre
+PQP TEM Q SER FODA
+pegar mais sprites de explosao se der
 
-twin laser- VARIOS JAIZ
-
-nao funcionou com agoritimo zoado, tentar com o esquema dos rects auxiliares
+kappa
 
 
 
@@ -18,7 +16,7 @@ nao funcionou com agoritimo zoado, tentar com o esquema dos rects auxiliares
 
 
 ##########################################################################
-mixxer durante missao
+mixer durante missao
 ch0-bgm menu
 ch1-bgm hangar
 ch2-bgm missao
@@ -31,22 +29,19 @@ ch6-explosao media
 
 #################################################################################
 INDEX DE ARMAS
-0 AIM-31 "Mauler" Air/Air Missile (2b-aamsl)
-1 Air/ground Missile (2b-aamsl)
-2 AARL-1201 "Scatterpack" Missile Pod, fires HR-20 Spike Missiles
-3 TH19 "Thor" Auto-Track Minigun (2b-tagmg)
-4 2.28 OD55 "Odin" Laser Turret (2b-lsrtr)
-5 Power Disruptor (2b-pwrdr)
-6 RX1 "Tsunami" Pulse Cannon (2b-plscn)
-7 -----#
-8 MSIL-ATLAS Deathray (2c-dthry)
-9 2.32 CAL-10 "Eclipse" Twin Lasers (2c-eclps)
+TECLADO MAG_NAVE    MAG_LOJA    NOME
+'           0           3        Air/Air Missile (2b-aamsl)
+                                 Air/ground Missile (2b-aamsl)
+                                 AARL-1201 "Scatterpack" Missile Pod, fires HR-20 Spike Missiles
+                                 TH19 "Thor" Auto-Track Minigun (2b-tagmg)
+                                 2.28 OD55 "Odin" Laser Turret (2b-lsrtr)
+                                 Power Disruptor (2b-pwrdr)
+                                 RX1 "Tsunami" Pulse Cannon (2b-plscn)
+                                 -----#
+                                 MSIL-ATLAS Deathray (2c-dthry)
+                                 2.32 CAL-10 "Eclipse" Twin Lasers (2c-eclps)
 
-PASSIVAS
 
-a-10 mg
-b-11 microfire
-c-12 plasma gun
 #################################################################################
 
 

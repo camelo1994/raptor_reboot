@@ -154,7 +154,15 @@ while 1:
                 sound_engine.mixer.channel[2].fadeout(500)
                 sound_engine.mixer.channel[3].stop()
 
-                #pygame.mouse.set_visible(True)
+            if  menu.next_status=='post_mortum':
+                sound_engine.mixer.channel[1].stop()
+                sound_engine.mixer.channel[2].stop()
+                sound_engine.mixer.channel[3].stop()
+
+
+        elif menu.last_status=='post_mortum':
+            print('Leaving '+menu.last_status)
+            sound_engine.mixer.channel[2].stop()
 
         #então realiza a inicialização do novo menu
         if menu.next_status=='quit':
@@ -171,6 +179,7 @@ while 1:
         if menu.next_status=='main':
             print('Generating main menu...')
             renderer.clear_control()
+            renderer.show_cursor=True
 
             #objetos
             file='images/menu/background.png'#fundo
@@ -220,6 +229,7 @@ while 1:
             #linhas
             render.lines.append(classes.line((600,450),(600,700),colors.RED,3))
 
+            sound_engine.mixer.channel[0].play(menu.bgm,fade_ms=500)
 
 
             menu.update(renderer)
@@ -469,6 +479,7 @@ while 1:
             #esconde o cursor
             renderer.show_cursor=False
             classes.play_sound('menu_swap')
+            menu.player.ship.redefine_magazine()
 
             #faz a linha de loading
             render.lines.append(classes.loading_line((50,sresV-10),(sresH-50,sresV-10),colors.RED1,2))
@@ -480,6 +491,10 @@ while 1:
             next_ship_spawn=enemy_ships[0]
             next_ship=0
             wave_over=False
+            ship_died=False
+            ship_died_time=-1
+            ship_boom_clock=-1
+            big_boom=True
             last_ship_killed_time=-1
             renderer.clear_control()
             renderer.show_static_objects=True
@@ -526,6 +541,21 @@ while 1:
                 menu.player.ship.enter_battle()
 
                 kappa=pygame.time.get_ticks()
+        if menu.next_status=='post_mortum':
+            print('Entering post-mortum')
+            renderer.clear_control()
+            renderer.show_cursor=False
+            renderer.debug_text.update_text('post-mortum')
+
+            clock=pygame.time.get_ticks()
+            # define canal 2 - bgm
+            wave_bgm_file='bgm/raptor08.ogg'
+            wave_sound=pygame.mixer.Sound(wave_bgm_file)
+            wave_sound.set_volume(1*BGMVOL)
+            sound_engine.mixer.channel[2].play(wave_sound,loops=-1)
+
+
+
 
         menu.done_loading()#informa ao menu,que Load/Unloads foram realizados
 
@@ -810,20 +840,45 @@ while 1:
 
                 #verifica naves inimgas novas na lista e as adiciona ate a wave acabar
                 distance+=1
-                if not wave_over:
-                    if distance>=enemy_ships[next_ship].spawn_distance:
-                        render.enemy_ships.append(enemy_ships[next_ship])
-                        next_ship+=1
-                        if next_ship==total_ships:
-                            wave_over=True
+                if ship_died:
+                    if pygame.time.get_ticks()-ship_died_time>=3000:
+                        menu.swap('post_mortum')
 
-                elif wave_over:
-                    if len(render.enemy_ships)==0:
-                        if last_ship_killed_time==-1:
-                            last_ship_killed_time=pygame.time.get_ticks()
-                        elif pygame.time.get_ticks()-last_ship_killed_time>=overtime:
-                            print('Cabo a wave!!!')
-                            menu.swap('hangar')
+
+                    else:
+                        if pygame.time.get_ticks()-ship_died_time>=1500 and big_boom:
+                            for i in classes.big_boom_list:
+                                classes.spawn_sprite(menu.player.ship.rect.centerx+i[0],menu.player.ship.rect.centery+i[1],'medium_explosion')
+
+                            big_boom=False
+                            renderer.show_player=False
+
+                        if pygame.time.get_ticks()-ship_boom_clock>=30:
+                            ship_boom_clock=pygame.time.get_ticks()
+                            a=random.randrange(2)
+                            if a==0:
+                                a='small_explosion'
+                            elif a==1:
+                                a='medium_explosion'
+                            x=random.randrange(-50,50)
+                            y=random.randrange(-50,50)
+                            classes.spawn_sprite(menu.player.ship.rect.centerx+x,menu.player.ship.rect.centery+y,a)
+
+
+                else:
+                    if not wave_over:
+                        if distance>=enemy_ships[next_ship].spawn_distance:
+                            render.enemy_ships.append(enemy_ships[next_ship])
+                            next_ship+=1
+                            if next_ship==total_ships:
+                                wave_over=True
+
+                    elif wave_over:
+                        if len(render.enemy_ships)==0:
+                            if last_ship_killed_time==-1:
+                                last_ship_killed_time=pygame.time.get_ticks()
+                            elif pygame.time.get_ticks()-last_ship_killed_time>=overtime:
+                                menu.swap('hangar')
 
 
 
@@ -844,7 +899,10 @@ while 1:
                             #verifica se eu tomei dano, retorna true se sim
                             if render.player.colliderect(i.rect):
                                 #entao me desconta a vida
-                                render.player.take_damage(i.damage,i.rect.centerx)
+                                if render.player.take_damage(i.damage,i.rect.centerx):
+                                    ship_died=True
+                                    ship_died_time=pygame.time.get_ticks()
+                                    classes.play_sound('death_boom')
                                 #e invalida o projetil
                                 i.valid=False
 
@@ -866,7 +924,10 @@ while 1:
                 #verifica colisoes com naves inimigas
                 for i in render.enemy_ships:
                     if render.player.colliderect(i.rect):
-                        render.player.take_damage(i.hp//100,i.rect.centerx)
+                        if render.player.take_damage(i.hp//100,i.rect.centerx):
+                            ship_died=True
+                            ship_died_time=pygame.time.get_ticks()
+                            classes.play_sound('death_boom')
                         i.take_damage(render.player)
 
             #atira se tiver com wm1 apertado
@@ -916,6 +977,7 @@ while 1:
                                             +'  nLines:'+str(len(render.lines)) \
                                             +'  HP:'+str(menu.player.ship.energy_module.current_hp)\
                                             +'  Shld:'+str(menu.player.ship.shield.current_hp)\
+                                            +'  Dead:'+str(ship_died)\
                                             +'  plyr$:'+str(menu.player.money)\
                                             +'  Dist:'+str(distance)\
                                             +'  Enemy:'+str(next_ship)+'/'+str(total_ships)\
@@ -924,6 +986,18 @@ while 1:
                                             +'  fTime: '+str(renderer.frametime)+'ms'\
                                             +'  ActiveWpN: '+str(render.player.active_weapon),colors.WHITE)
 
+        while menu.status=='post_mortum':
+            for event in pygame.event.get():
+                if event.type==QUIT:
+                    menu.swap('quit')
+                if event.type==KEYDOWN:
+                    if event.key==K_ESCAPE:
+                        menu.swap('main')
+
+            menu.update(renderer)
+
+            if menu.cursor.buttons[0]:
+                menu.swap('main')
 
 
 

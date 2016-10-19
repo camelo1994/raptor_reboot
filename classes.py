@@ -11,6 +11,7 @@ items_db=None
 items_db_cursor=None
 shop_magazine=[]
 shop_description_lines=[]
+big_boom_list=[]
 sprites_dict={}
 audio_dict={}
 enemy_dict={}
@@ -40,6 +41,8 @@ def init(a,b):
     start_enemy_dict()
     start_items_dict()
     start_shop_magazine()
+    start_big_boom_list()
+
 
 
 class sprite_data:
@@ -84,7 +87,7 @@ def start_sprite_dict():
         spritelist=[]
         for i in range(14):
             aux='sprites/medium_explosion/'+str(i)+'.png'
-            spritelist.append((aux,50))
+            spritelist.append((aux,60))
             aux=pyganim.PygAnimation(spritelist)
             sprites_dict['medium_explosion']=sprite_data(aux,160,160)
 
@@ -229,9 +232,9 @@ def start_audio_dict():
 
     # barulho do twin laser
     if 1:
-        name='twin_laser_fire'
-        vol=0.6
-        aux='sounds/weapons/'+name+'.ogg'
+        name='death_boom'
+        vol=1
+        aux='sounds/ship/'+name+'.ogg'
         aux=pygame.mixer.Sound(aux)
         aux.set_volume(SFXVOL*vol)
         audio_dict[name]=aux
@@ -515,6 +518,27 @@ def start_shop_magazine():
         shop_description_lines.append(aux)
 
 
+def start_big_boom_list():
+    big_boom_list.append((-40,-40))
+    big_boom_list.append((0,-40))
+    big_boom_list.append((+40,-40))
+    big_boom_list.append((-40,0))
+    big_boom_list.append((0,0))
+    big_boom_list.append((+40,0))
+    big_boom_list.append((-40,+40))
+    big_boom_list.append((0,+40))
+    big_boom_list.append((+40,+40))
+
+    big_boom_list.append((-60,-60))
+    big_boom_list.append((0,-60))
+    big_boom_list.append((+60,-60))
+    big_boom_list.append((-60,0))
+    big_boom_list.append((0,0))
+    big_boom_list.append((+60,0))
+    big_boom_list.append((-60,+60))
+    big_boom_list.append((0,+60))
+    big_boom_list.append((+60,+60))
+
 # chamadas DE SPAWN - x,y é o centro da animação!!!
 def spawn_sprite(x,y,key,dx=0,dy=0):
     global sprites_dict
@@ -758,6 +782,8 @@ class menu:  # (settings_file,profiles_file,crosshair_file,bgm_file):
         self.player_text_index=None
         self.button_sound_held=False
         self.selected=False
+
+
 
         # read saved data
         self.read_user_settings()
@@ -1880,6 +1906,7 @@ class Ship:
         self.x=0
         self.has_no_weapons=False
         self.pseudo=True
+        self.dead=False
 
         # lista com 5 images de inclina??o 0->4
         if 1:
@@ -2207,11 +2234,17 @@ class Ship:
             self.shield.take_damage(dmg)
             self.shield_sound.play()
             self.shield_anim.play()
+            self.update_bars()
         else:
             self.energy_module.take_damage(dmg)
             spawn_sprite(projectile_x,self.rect.centery-10,'small_explosion')
             play_sound('ship_hull')
-        self.update_bars()
+            self.update_bars()
+            if self.energy_module.current_hp<=0:
+                self.dead=1
+                return True
+
+
 
     def print(self,str):
         print(Fore.LIGHTRED_EX+'[SHIP] '+Fore.RESET+str)
