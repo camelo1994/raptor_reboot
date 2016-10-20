@@ -230,7 +230,7 @@ def start_audio_dict():
         aux.set_volume(SFXVOL*vol)
         audio_dict[name]=aux
 
-    # barulho do twin laser
+    # barulho do big boom
     if 1:
         name='death_boom'
         vol=1
@@ -239,6 +239,23 @@ def start_audio_dict():
         aux.set_volume(SFXVOL*vol)
         audio_dict[name]=aux
 
+    #twin laser
+    if 1:
+        name='twin_laser_fire'
+        vol=0.8
+        aux='sounds/weapons/'+name+'.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*vol)
+        audio_dict[name]=aux
+
+    # leave_wave
+    if 1:
+        name='leave_wave'
+        vol=0.8
+        aux='sounds/ship/'+name+'.ogg'
+        aux=pygame.mixer.Sound(aux)
+        aux.set_volume(SFXVOL*vol)
+        audio_dict[name]=aux
 
 def start_enemy_dict():
     print('Initializing enemies dictionary')
@@ -539,13 +556,25 @@ def start_big_boom_list():
     big_boom_list.append((0,+60))
     big_boom_list.append((+60,+60))
 
+    big_boom_list.append((-80,-80))
+    big_boom_list.append((0,-80))
+    big_boom_list.append((+80,-80))
+    big_boom_list.append((-80,0))
+    big_boom_list.append((0,0))
+    big_boom_list.append((+80,0))
+    big_boom_list.append((-80,+80))
+    big_boom_list.append((0,+80))
+    big_boom_list.append((+80,+80))
+
 # chamadas DE SPAWN - x,y é o centro da animação!!!
-def spawn_sprite(x,y,key,dx=0,dy=0):
+def spawn_sprite(x,y,key,dx=0,dy=0,loop=False):
     global sprites_dict
     if key in sprites_dict:
         n=len(render.sprites)
         aux=sprites_dict.get(key)
         render.sprites.append(Animation(aux.Animation,anim_rect(x,y,dx,dy,aux.w,aux.h)))
+        if loop:
+            render.sprites[n].animation._loop=True
         render.sprites[n].animation.play()
     else:
         if key=='null':
@@ -1828,7 +1857,7 @@ class Shield:
         self.hp=self.data[2]
         self.current_hp=int(self.hp*perc)
         self.multiplier=self.data[3]
-        self.layers=2
+        self.layers=0
 
         # pygame stuff
         file='images/items/'+str(self.data[1])+'.png'
@@ -1839,8 +1868,14 @@ class Shield:
     def take_damage(self,dmg):
         # reduz a vida
         self.current_hp-=int(dmg*self.multiplier)
-        if self.current_hp<0:
-            self.current_hp=0
+        print(self.current_hp,self.layers)
+        if self.current_hp<=0:
+            if self.layers>1:
+                self.layers-=1
+                self.current_hp=100
+            else:
+                self.current_hp=0
+                self.layers-=1
 
 
 class Energy_module:
@@ -2188,6 +2223,12 @@ class Ship:
             a=(i+1)*8-4
             render.lines.append(line((5,800-a),(25,800-a),colors.YELLOW,3))
 
+        # faz o overlay, que é as layers do shield
+        for i in range(5):
+            b=pygame.image.load('images/items/phase_shield_half.png')
+            render.UI.append(Object(b,40+(40*i),-100,0,0))
+
+
         # inicializa TOOLS PARA armas
         self.line_n=len(render.lines)
         render.lines.append(line((0,0),(0,0),colors.WHITE,1))
@@ -2209,7 +2250,6 @@ class Ship:
         self.update_bars()
 
     def update_bars(self):
-        # self.print('Shield/HP Bar:'+str(self.energy_module.current_hp)+'% '+str(self.shield.current_hp)+'%')
 
         for i in range(100):
             if i<self.energy_module.current_hp:
@@ -2229,6 +2269,16 @@ class Ship:
                 render.lines[i+102].start=(1300,800)
                 render.lines[i+102].end=(1300,800)
 
+
+        for i in range(5):
+            render.UI[i].rect.top=-100
+
+        for i in range(self.shield.layers):
+            render.UI[i].rect.top=5
+
+
+
+
     def take_damage(self,dmg,projectile_x):
         if self.shield.current_hp>0:
             self.shield.take_damage(dmg)
@@ -2243,8 +2293,6 @@ class Ship:
             if self.energy_module.current_hp<=0:
                 self.dead=1
                 return True
-
-
 
     def print(self,str):
         print(Fore.LIGHTRED_EX+'[SHIP] '+Fore.RESET+str)
@@ -2730,7 +2778,11 @@ def buy_weapon(player,cursor):
 
         elif cursor==1:
             if player.ship.shield.layers<5:
-                player.ship.shield.layers+=1
+                if player.ship.shield.layers==0:
+                    player.ship.shield.layers+=1
+                    player.ship.shield.current_hp=100
+                else:
+                    player.ship.shield.layers+=1
                 if player.ship.shield.layers>5:
                     player.ship.shield.layers=5
                 player.money-=shop_magazine[cursor].cost
@@ -2796,8 +2848,9 @@ def sell_weapon(player,cursor,display):
 
     elif cursor==1:
         if player.ship.shield.layers>0:
-            player.ship.shield.layers-=1
-            player.money+=int(shop_magazine[cursor].cost/2)
+            if player.ship.shield.current_hp==100:
+                player.ship.shield.layers-=1
+                player.money+=int(shop_magazine[cursor].cost/2)
             if player.ship.shield.layers==0:
                 display.nones_items.append(cursor)
                 return -1

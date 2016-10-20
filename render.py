@@ -10,8 +10,7 @@ buttons=[]
 projectiles=[]  # $
 sprays=[]  # $
 sprites=[]  # $
-shield_UI=[]  # $-sao as barras laterais
-hp_UI=[]  # $-barra lateral
+UI=[]  # $-overlay
 enemy_ships=[]  # sao as naves inimgas e elas se blitam
 shadows=[]
 static_objects=[]
@@ -92,6 +91,7 @@ class render_thread_class(threading.Thread):
         self.show_static_objects=False
         self.blit_flags=Blit()
         self.background=False
+        self.showUI=False
         self.enable_shadows=enable_shadows
 
         # debug
@@ -112,8 +112,7 @@ class render_thread_class(threading.Thread):
         sprays=[]
         sprites=[]
         sprites_pos=[]
-        shield_UI=[]
-        hp_UI=[]
+        UI=[]
         enemy_ships=[]
         static_objects=[]
         self.show_static_objects=False
@@ -167,6 +166,9 @@ class render_thread_class(threading.Thread):
                 # prita objetos estaticos soltos
                 if self.show_static_objects:
                     for i in static_objects:
+                        self.screen.blit(i.image,i.rect)
+                if self.showUI:
+                    for i in UI:
                         self.screen.blit(i.image,i.rect)
 
                 # printa o player - tem seu proprio blit()

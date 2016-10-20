@@ -147,6 +147,8 @@ while 1:
             renderer.show_player=False
             renderer.background=False
             renderer.show_static_objects=False
+            renderer.showUI=False
+
             enemy_ships=[]
             distance=0
             if menu.next_status=='hangar':
@@ -176,6 +178,7 @@ while 1:
             print('Ready to quit...')
 
             sys.exit()
+
         if menu.next_status=='main':
             print('Generating main menu...')
             renderer.clear_control()
@@ -233,6 +236,7 @@ while 1:
 
 
             menu.update(renderer)
+
         if menu.next_status=='profile':
             print('Generating profiles menu...')
             renderer.clear_control()
@@ -299,6 +303,7 @@ while 1:
 
 
             menu.update(renderer)
+
         if menu.next_status=='hangar':
             print('Generating hangar menu...')
             renderer.clear_control()
@@ -328,6 +333,7 @@ while 1:
 
             patha='dev_menu/buttons/hangar/save.png'
             render.buttons.append(classes.MenuButton(patha,patha,680,140,abs))
+
         if menu.next_status=='supply':
             print('Generating supply menu...')
             renderer.clear_control()
@@ -466,13 +472,15 @@ while 1:
                 display=classes.Display(player_money_text_id,item_picture_id,name_text_id,function_text_id,\
                                         shop_texts_id,have_text_id,cost_text_id,value_text_id,\
                                         buy_sell_text_id,have_str_text_id)
+
         if menu.next_status=='ship':
             print('Generating ship menu...')
             renderer.clear_control()
             filepath='fonts/Capture_it.ttf'
             render.texts.append(classes.text('SHIP MENU',filepath,70,colors.WHITE,sresH/2,sresV/2))
+
         if menu.next_status=='mission':
-            print('Generating mission menu...')
+            print('Generating mission...')
             renderer.clear_control()
             #entra no modo diferencial
             menu.cursor.diff_mode()
@@ -481,32 +489,38 @@ while 1:
             classes.play_sound('menu_swap')
             menu.player.ship.redefine_magazine()
 
-            #faz a linha de loading
-            render.lines.append(classes.loading_line((50,sresV-10),(sresH-50,sresV-10),colors.RED1,2))
-
-            wave='a0'
-            print('Loading enemy ships list - may take some time (wave '+str(wave)+')')
-
-            total_ships,overtime=classes.load_wave_list(wave,enemy_ships,render.lines[0])
-            next_ship_spawn=enemy_ships[0]
-            next_ship=0
-            wave_over=False
-            ship_died=False
-            ship_died_time=-1
-            ship_boom_clock=-1
-            big_boom=True
-            last_ship_killed_time=-1
-            renderer.clear_control()
-            renderer.show_static_objects=True
-
-
-            #inits basicos
+            # define canal 2 - bgm
             if 1:
-                #define canal 2 - bgm
                 wave_bgm_file='bgm/raptor02.ogg'
                 wave_sound=pygame.mixer.Sound(wave_bgm_file)
                 wave_sound.set_volume(0.5*BGMVOL)
                 sound_engine.mixer.channel[2].play(wave_sound,loops=-1)
+
+            #loading
+            if 1:
+                render.lines.append(classes.loading_line((50,sresV-10),(sresH-50,sresV-10),colors.RED1,2))
+
+                wave='a0'
+                print('Loading enemy ships list - may take some time (wave '+str(wave)+')')
+
+                total_ships,overtime=classes.load_wave_list(wave,enemy_ships,render.lines[0])
+                next_ship_spawn=enemy_ships[0]
+                next_ship=0
+                wave_over=False
+                ship_died=False
+                ship_died_time=-1
+                ship_boom_clock=-1
+                played_sound=False
+                big_boom=True
+                last_ship_killed_time=-1
+                renderer.clear_control()
+                renderer.show_static_objects=True
+                renderer.showUI=True
+                player_halt=-1
+
+            #inits basicos
+            if 1:
+
                 #define canal 3 - barulho do vento
                 jet_sound_file='sounds/jet_interior.ogg'
                 jet_sound=pygame.mixer.Sound(jet_sound_file)
@@ -539,8 +553,25 @@ while 1:
 
                  #avisa pra nave q vai entrar em batalha
                 menu.player.ship.enter_battle()
-
                 kappa=pygame.time.get_ticks()
+
+            #carrega ja a tela de post portum
+            if 1:
+                post_mortum_a=[]
+                post_mortum_b=[]
+                name='post_mortum_a'
+                n=30
+                spritelist=[]
+                for i in range(n):
+                    aux='images/'+name+'/'+str(i)+'.jpg'
+                    post_mortum_a.append(pygame.image.load(aux))
+                name='post_mortum_b'
+                n=11
+                spritelist=[]
+                for i in range(n):
+                    aux='images/'+name+'/'+str(i)+'.jpg'
+                    post_mortum_b.append(pygame.image.load(aux))
+
         if menu.next_status=='post_mortum':
             print('Entering post-mortum')
             renderer.clear_control()
@@ -554,6 +585,13 @@ while 1:
             wave_sound.set_volume(1*BGMVOL)
             sound_engine.mixer.channel[2].play(wave_sound,loops=-1)
 
+
+            #
+            k=0
+            state=0
+            t=250
+            render.objects.append(classes.Object(post_mortum_a[k],0,0,0,0))
+            clock=pygame.time.get_ticks()
 
 
 
@@ -692,12 +730,12 @@ while 1:
                         display.recover_from_error()
                         display.update(menu.player.money,cursor,classes.get_if_have(menu.player.ship,cursor),False)
 
-
             elif display.status=='buy':
                 if a!=None:
                     a=a[1:]
                     if a=='main':
                         menu.swap('hangar')
+                        classes.play_sound('menu_swap')
                     else:
                         action_sound.play()
                         if a=='+':
@@ -741,6 +779,8 @@ while 1:
                     a=a[1:]
                     if a=='main':
                         menu.swap('hangar')
+                        classes.play_sound('menu_swap')
+
                     else:
                         action_sound.play()
                         if a=='+':
@@ -827,14 +867,16 @@ while 1:
 
 
             #move a nave &verifica posição desejada para ver se cabe na tela
-            if desired_pos[0]+menu.cursor.posdX<sresH-34 and desired_pos[0]+menu.cursor.posdX>34:
-                desired_pos[0]+=menu.cursor.posdX
-            if desired_pos[1]+menu.cursor.posdY>40 and desired_pos[1]+menu.cursor.posdY<sresV-40:
-                desired_pos[1]+=menu.cursor.posdY
-            #move a nave    
-            render.player.move(desired_pos)
+            if last_ship_killed_time==-1:
+                if desired_pos[0]+menu.cursor.posdX<sresH-34 and desired_pos[0]+menu.cursor.posdX>34:
+                    desired_pos[0]+=menu.cursor.posdX
+                if desired_pos[1]+menu.cursor.posdY>40 and desired_pos[1]+menu.cursor.posdY<sresV-40:
+                    desired_pos[1]+=menu.cursor.posdY
+                #move a nave
+                render.player.move(desired_pos)
 
-            #atualiza tudo
+
+
             if pygame.time.get_ticks()-clock>=16:
                 clock=pygame.time.get_ticks()
 
@@ -873,11 +915,22 @@ while 1:
                             if next_ship==total_ships:
                                 wave_over=True
 
+
                     elif wave_over:
                         if len(render.enemy_ships)==0:
                             if last_ship_killed_time==-1:
                                 last_ship_killed_time=pygame.time.get_ticks()
-                            elif pygame.time.get_ticks()-last_ship_killed_time>=overtime:
+                            else:
+                                if pygame.time.get_ticks()-last_ship_killed_time>=100:
+                                    if not played_sound:
+                                        classes.play_sound('leave_wave')
+                                        played_sound=True
+                                    render.player.move((render.player.rect.centerx,render.player.rect.centery-20))
+
+                            if pygame.time.get_ticks()-last_ship_killed_time>=overtime:
+
+
+
                                 menu.swap('hangar')
 
 
@@ -991,13 +1044,27 @@ while 1:
                 if event.type==QUIT:
                     menu.swap('quit')
                 if event.type==KEYDOWN:
-                    if event.key==K_ESCAPE:
-                        menu.swap('main')
+                    menu.swap('main')
 
             menu.update(renderer)
 
             if menu.cursor.buttons[0]:
                 menu.swap('main')
+
+            if pygame.time.get_ticks()-clock>=t:
+                clock=pygame.time.get_ticks()
+                if state==0:
+                    k+=1
+                    render.objects[0].change_image(post_mortum_a[k])
+                    if k==29:
+                        state=1
+                        k=0
+                        t=160
+                else:
+                    render.objects[0].image=post_mortum_b[k]
+                    k+=1
+                    if k==11:
+                        k=0
 
 
 
