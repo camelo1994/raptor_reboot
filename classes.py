@@ -748,6 +748,14 @@ class Player:
         self.image=pygame.image.load(picture_file_path)
         self.rect=self.image.get_rect()
 
+    def save(self,cursor):
+        a='UPDATE profiles SET '
+        a+='money='+str(self.money)
+        a+=" WHERE name='"+self.name+"'"
+        #print(a)
+        cursor.execute(a)
+
+        self.ship.save(cursor)
 
 class Cursor:
     def __init__(self,image):
@@ -882,11 +890,11 @@ class menu:  # (settings_file,profiles_file,crosshair_file,bgm_file):
         self.print('\t Global settings..')
         global data_db_cursor,data_db
 
-        aux='UPDATE settings SET'+' bgm_volume='+str(self.bgm_volume)+','+'last_player='+str(self.profileindex)
+        aux='UPDATE settings SET'+' bgm_volume='+str(self.bgm_volume)+','+'last_player='+str(self.active_player)
         data_db_cursor.execute(aux)
 
-        aux='UPDATE profiles SET'+' Money='+str(self.player.money)+' WHERE id='+str(self.profileindex)
-        data_db_cursor.execute(aux)
+        for i in self.player_list:
+            i.save(data_db_cursor)
         self.print('\tCommiting database')
         data_db.commit()
 
@@ -1868,7 +1876,6 @@ class Shield:
     def take_damage(self,dmg):
         # reduz a vida
         self.current_hp-=int(dmg*self.multiplier)
-        print(self.current_hp,self.layers)
         if self.current_hp<=0:
             if self.layers>1:
                 self.layers-=1
@@ -1916,11 +1923,12 @@ class Ship:
 
         data_db_cursor.execute('SELECT * FROM ships WHERE ID='+str(index))
         self.shipdata=data_db_cursor.fetchall()[0]
-
+        self.index=index
         self.energy_module=copy(items_dict.get(self.shipdata[1]))
-        self.energy_module.current_hp=self.energy_module.hp*self.shipdata[7]
+        self.energy_module.current_hp=self.energy_module.hp*self.shipdata[8]
         self.shield=copy(items_dict.get(self.shipdata[2]))
-        self.shield.current_hp=self.shield.hp*self.shipdata[8]
+        self.shield.current_hp=self.shield.hp*self.shipdata[7]
+        self.shield.layers=self.shipdata[9]
 
         self.skin=self.shipdata[3]
 
@@ -2276,9 +2284,6 @@ class Ship:
         for i in range(self.shield.layers):
             render.UI[i].rect.top=5
 
-
-
-
     def take_damage(self,dmg,projectile_x):
         if self.shield.current_hp>0:
             self.shield.take_damage(dmg)
@@ -2308,6 +2313,26 @@ class Ship:
         else:
             return self.rect.colliderect(rect)
 
+    def save(self,cursor):
+        a='UPDATE ships SET'
+        a+=' energylvl='+str(self.energy_module.current_hp/100)
+        a+=' ,shieldlvl='+str(self.shield.current_hp/100)
+        a+=' ,Weapon1='+str(self.active_weapon)
+        a+=" ,Weapon0='"+self.get_weapons_string()+"'"
+        a+=' ,shield_layers='+str(self.shield.layers)
+        a+=" WHERE id="+str(self.index)
+        print(a)
+        cursor.execute(a)
+
+    def get_weapons_string(self):
+        a=''
+        possibilidades=['0','1','2','3','4','5','6','7','8','9','a','b','c']
+        for i in range(13):
+            if self.weapon_magazine[i]!=None:
+                a+=possibilidades[i]
+
+        print(a)
+        return a
 
 #######################################
 ######### SHIPS INIMIGAS ##############
